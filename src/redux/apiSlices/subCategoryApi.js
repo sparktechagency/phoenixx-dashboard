@@ -34,7 +34,16 @@ const subCategorySlice = api.injectEndpoints({
     getSubCategories: builder.query({
       query: () => {
         return {
-          url: "/categories",
+          url: "/subcategories",
+          method: "GET",
+        };
+      },
+      providesTags: ["SubCategory"],
+    }),
+    getSubCategoriesByCatID: builder.query({
+      query: (catID) => {
+        return {
+          url: `/subcategories/subcategories-by-category/${catID}`,
           method: "GET",
         };
       },
@@ -45,6 +54,7 @@ const subCategorySlice = api.injectEndpoints({
 
 export const {
   useGetSubCategoriesQuery,
+  useGetSubCategoriesByCatIDQuery,
   useCreateSubCategoryMutation,
   useUpdateSubCategoryMutation,
   useDeleteSubCategoryMutation,

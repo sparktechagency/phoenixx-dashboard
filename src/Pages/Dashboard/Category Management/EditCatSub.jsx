@@ -10,6 +10,8 @@ import {
   Segmented,
 } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
+import { useCategoryQuery } from "../../../redux/apiSlices/categoryApi";
+import { useGetSubCategoriesByCatIDQuery } from "../../../redux/apiSlices/subCategoryApi";
 
 const { Dragger } = Upload;
 
@@ -35,17 +37,36 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
   const [imageFile, setImageFile] = useState(null);
   const [fileList, setFileList] = useState([]);
 
-  const categoryOptions = [
-    { value: "cat1", label: "Category 1" },
-    { value: "cat2", label: "Category 2" },
-    { value: "cat3", label: "Category 3" },
-  ];
+  // Fetch category data
+  const { data: categoryData, isLoading } = useCategoryQuery();
+  const categories = categoryData?.data?.result || [];
+  console.log("categories", categories);
 
-  const subCategoryOptions = [
-    { value: "subCat1", label: "Sub Category 1" },
-    { value: "subCat2", label: "Sub Category 2" },
-    { value: "subCat3", label: "Sub Category 3" },
-  ];
+  // Map categories to options format required by Select component
+  const categoryOptions = categories.map((cat) => ({
+    value: cat.category.id,
+    label: cat.category.name,
+  }));
+
+  console.log(categoryOptions);
+
+  const { data: subCategoryData } =
+    useGetSubCategoriesByCatIDQuery(selectedCategory);
+  const subCategories = subCategoryData?.data || [];
+  // console.log("SubC", subCategoryData?.data);
+  console.log("selectedCategory", selectedCategory);
+
+  const subCategoryOptions = subCategories.map((sub) => ({
+    value: sub.id,
+    label: sub.name,
+  }));
+
+  // const subCategoryOptions = [
+  //   {
+  //     value: "cat.category.id",
+  //     label: "cat.category.name",
+  //   },
+  // ];
 
   // Handle image file changes
   const handleImageChange = ({ fileList }) => {
@@ -64,10 +85,6 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
           isSelected === "Category"
             ? values.categoryName
             : values.subCategoryName,
-        description:
-          isSelected === "Category"
-            ? values.categoryDesc
-            : values.subCategoryDesc,
         image: imageFile ? imageFile.name : "",
       };
 
@@ -91,6 +108,12 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
   const handleSelected = (value) => {
     setSelected(value);
     console.log(value);
+  };
+
+  // Handle category selection
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    console.log("Selected category:", value);
   };
 
   return (
@@ -119,7 +142,12 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
               name="category"
               rules={[{ required: true, message: "Please select a category!" }]}
             >
-              <Select placeholder="Select Category" options={categoryOptions} />
+              <Select
+                placeholder="Select Category"
+                options={categoryOptions}
+                onChange={handleCategoryChange}
+                loading={isLoading}
+              />
             </Form.Item>
 
             {/* Subcategory Form Fields */}
@@ -191,22 +219,6 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
               </Upload>
             </Form.Item>
 
-            {/* <Form.Item
-              label={
-                selected === "Category"
-                  ? "Category Description"
-                  : "Subcategory Description"
-              }
-              name={
-                selected === "Category" ? "categoryDesc" : "subCategoryDesc"
-              }
-              rules={[
-                { required: true, message: "Please enter the description!" },
-              ]}
-            >
-              <Input.TextArea rows={4} />
-            </Form.Item> */}
-
             <Form.Item>
               <Button
                 htmlType="submit"
@@ -217,42 +229,6 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
             </Form.Item>
           </Form>
         </div>
-        {/* 
-        <div className="w-1/3 mt-4">
-          <div className="border-2 rounded-lg border-green-700 p-4 flex flex-col gap-4">
-            <p>
-              {selected === "Category" ? "Category Name" : "Subcategory Name"}:
-              {form.getFieldValue(
-                selected === "Category" ? "categoryName" : "subCategoryName"
-              )}
-            </p>
-            <div className="w-40 h-auto">
-              <p>Image:</p>
-              {fileList.length > 0 && (
-                <img
-                  src={fileList[0]?.thumbUrl || fileList[0]?.url}
-                  alt="Preview"
-                  width="100%"
-                />
-              )}
-            </div>
-            <div>
-              <p>
-                {selected === "Category"
-                  ? "Category Description"
-                  : "Subcategory Description"}
-                :
-              </p>
-              <div className="overflow-auto h-20">
-                <p>
-                  {form.getFieldValue(
-                    selected === "Category" ? "categoryDesc" : "subCategoryDesc"
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );

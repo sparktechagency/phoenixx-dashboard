@@ -1,70 +1,55 @@
 import React from "react";
 import { DownOutlined } from "@ant-design/icons";
-import { Tree } from "antd";
+import { Tree, Spin, Alert } from "antd";
 import { useCategoryQuery } from "../../../redux/apiSlices/categoryApi";
-
-const treeData = [
-  {
-    title: "Category 1",
-    key: "cat-1",
-    children: [
-      {
-        title: "Sub Category 1.1",
-        key: "cat-1-sub-1",
-      },
-      {
-        title: "Sub Category 1.2",
-        key: "cat-1-sub-2",
-      },
-      {
-        title: "Sub Category 1.3",
-        key: "cat-1-sub-3",
-      },
-      {
-        title: "Sub Category 1.4",
-        key: "cat-1-sub-4",
-      },
-    ],
-  },
-  {
-    title: "Category 2",
-    key: "cat-2",
-    children: [
-      {
-        title: "Sub Category 2.1",
-        key: "cat-2-sub-1",
-      },
-      {
-        title: "Sub Category 2.2",
-        key: "cat-2-sub-2",
-      },
-      {
-        title: "Sub Category 2.3",
-        key: "cat-2-sub-3",
-      },
-      {
-        title: "Sub Category 2.4",
-        key: "cat-2-sub-4",
-      },
-    ],
-  },
-];
+import { useGetSubCategoriesQuery } from "../../../redux/apiSlices/subCategoryApi";
 
 function CategoryList() {
-
-  const [getCategory,{isLoa}] = useCategoryQuery()
+  const { data: categoryData, isLoading, isError } = useCategoryQuery();
+  const { data: subCategoryData } = useGetSubCategoriesQuery();
 
   const onSelect = (selectedKeys, info) => {
     console.log("Selected keys:", selectedKeys);
     console.log("Selected node info:", info);
   };
 
+  const buildTreeData = (categories, subCategories) => {
+    if (!Array.isArray(categories)) return [];
+
+    return categories.map((catWrapper) => {
+      const category = catWrapper.category;
+      const catId = category._id;
+
+      const children = subCategories
+        .filter((sub) => sub.categoryId === catId)
+        .map((sub) => ({
+          title: sub.name,
+          key: `sub-${sub._id}`,
+        }));
+
+      return {
+        title: category.name,
+        key: `cat-${catId}`,
+        children,
+      };
+    });
+  };
+
+  if (isLoading) return <Spin className="p-4" tip="Loading categories..." />;
+  if (isError)
+    return <Alert type="error" message="Failed to load categories" />;
+
+  const categories = categoryData?.data?.result || [];
+  const subCategories = subCategoryData?.data?.result || [];
+
+  const treeData = buildTreeData(categories, subCategories);
+
   return (
-    <div className="w-1/2 ">
+    <div className="w-1/2">
       <Tree
         showLine
         switcherIcon={<DownOutlined />}
-        defaultExpandedKeys={["cat-1"]}
+        defaultExpandedKeys={[treeData[0]?.key]}
         onSelect={onSelect}
         treeData={treeData}
         className="p-4"

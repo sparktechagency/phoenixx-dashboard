@@ -45,7 +45,7 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
   // Fetch categories for parent category dropdown
   const { data: categoryData } = useCategoryQuery();
   const categories = categoryData?.data?.result || [];
-
+  console.log("categories", categories);
   // Filter main categories (no parent) and subcategories
   const mainCategories = categories.filter((cat) => !cat.parentCategory);
 
@@ -59,36 +59,75 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
     }
   };
 
+  // const onFinish = async (values) => {
+  //   try {
+  //     const subCategoryData = {
+  //       name: values.subCategoryName,
+  //       image: imageFile ? imageFile.name : "",
+  //       parentCategory: values.parentCategory,
+  //     };
+
+  //     // If creating subcategory, call createSubCategory
+  //     if (isSelected === "Sub Category") {
+  //       await createSubCategory(subCategoryData).unwrap();
+  //       message.success("Subcategory created successfully!");
+  //     } else {
+  //       const categoryData = {
+  //         // categoryId:
+  //         name: values.categoryName,
+  //         image: imageFile ? imageFile.name : "",
+  //       };
+  //       await createCategory(categoryData).unwrap();
+  //       message.success("Category created successfully!");
+  //     }
+
+  //     // Reset form and state
+  //     form.resetFields();
+  //     setFileList([]);
+  //   } catch (error) {
+  //     message.error("Something went wrong!");
+  //     console.error(error);
+  //   }
+  // };
+
   const onFinish = async (values) => {
     try {
-      const subCategoryData = {
-        name: values.subCategoryName,
-        description: values.subCategoryDesc,
-        image: imageFile ? imageFile.name : "",
-        parentCategory: values.parentCategory,
-      };
+      if (selected === "Sub Category") {
+        const subCategoryData = {
+          name: values.subCategoryName,
+          image: imageFile ? imageFile.name : "",
+          categoryId: values.parentCategory, // 🔥 FIXED THIS LINE
+        };
 
-      // If creating subcategory, call createSubCategory
-      if (isSelected === "Sub Category") {
+        if (!subCategoryData.name || !subCategoryData.categoryId) {
+          message.error("Please provide subcategory name and parent category.");
+          return;
+        }
+
         await createSubCategory(subCategoryData).unwrap();
         message.success("Subcategory created successfully!");
       } else {
         const categoryData = {
-          // categoryId:
           name: values.categoryName,
-          description: values.categoryDesc,
           image: imageFile ? imageFile.name : "",
         };
+
+        if (!categoryData.name) {
+          message.error("Category name is required.");
+          return;
+        }
+
         await createCategory(categoryData).unwrap();
         message.success("Category created successfully!");
       }
 
-      // Reset form and state
       form.resetFields();
       setFileList([]);
     } catch (error) {
-      message.error("Something went wrong!");
       console.error(error);
+      message.error(
+        error?.data?.message || "Something went wrong during submission!"
+      );
     }
   };
 
@@ -227,54 +266,6 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
           </Form.Item>
         </Form>
       </div>
-
-      {/* Right Side Preview */}
-      {/* <div className="w-1/3 mt-4">
-          <div className="border-2 rounded-lg border-green-700 p-4 flex flex-col gap-4">
-            <p>
-              {selected === "Category" ? "Category Name" : "Subcategory Name"}:
-              {form.getFieldValue(
-                selected === "Category" ? "categoryName" : "subCategoryName"
-              )}
-            </p>
-            <div className="w-40 h-auto">
-              <p>Image:</p>
-              {fileList.length > 0 && (
-                <img
-                  src={fileList[0]?.thumbUrl || fileList[0]?.url}
-                  alt="Preview"
-                  width="100%"
-                />
-              )}
-            </div>
-            <div>
-              <p>
-                {selected === "Category"
-                  ? "Category Description"
-                  : "Subcategory Description"}
-                :
-              </p>
-              <div className="overflow-auto h-20">
-                <p>
-                  {form.getFieldValue(
-                    selected === "Category" ? "categoryDesc" : "subCategoryDesc"
-                  )}
-                </p>
-              </div>
-            </div>
-            {selected === "Sub Category" && (
-              <div>
-                <p>
-                  Parent Category:{" "}
-                  {mainCategories.find(
-                    (cat) =>
-                      cat.category.id === form.getFieldValue("parentCategory")
-                  )?.category?.name || ""}
-                </p>
-              </div>
-            )}
-          </div>
-        </div> */}
     </div>
   );
 };
