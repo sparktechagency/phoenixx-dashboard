@@ -1,16 +1,8 @@
-// export const getImageUrl = (path) => {
-//   if (path.startsWith("http://") || path.startsWith("https://")) {
-//     return path;
-//   } else {
-//     const baseUrl = "http://10.0.70.126:6007";
-//     return `${baseUrl}/${path}`;
-//   }
-// };
-
 import { getBaseUrl } from "../../utils/baseUrl";
 
 export const getImageUrl = (path) => {
   // Check if path is undefined, null, or empty
+  const imaapiPath = "http://10.0.60.123:5002";
   if (!path) {
     return "https://via.placeholder.com/50"; // Return a fallback image
   }
@@ -22,6 +14,6 @@ export const getImageUrl = (path) => {
     const baseUrl = getBaseUrl();
     // console.log(baseUrl, path);
     // const baseUrl = "http://10.0.60.126:6007";
-    return `${baseUrl}${path}`;
+    return `${imaapiPath}${path}`;
   }
 };

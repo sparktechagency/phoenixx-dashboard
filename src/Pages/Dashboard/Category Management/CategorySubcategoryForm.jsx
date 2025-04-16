@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  Button,
-  Form,
-  Input,
-  Upload,
-  Select,
-  message,
-  ConfigProvider,
-  Segmented,
-} from "antd";
+import { Button, Form, Input, Upload, Select, message, Segmented } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import {
   useCategoryQuery,
@@ -90,39 +81,83 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
   //   }
   // };
 
+  // const onFinish = async (values) => {
+  //   try {
+  //     if (selected === "Sub Category") {
+  //       const subCategoryData = {
+  //         name: values.subCategoryName,
+  //         image: imageFile ? imageFile.name : "",
+  //         categoryId: values.parentCategory, // 🔥 FIXED THIS LINE
+  //       };
+
+  //       if (!subCategoryData.name || !subCategoryData.categoryId) {
+  //         message.error("Please provide subcategory name and parent category.");
+  //         return;
+  //       }
+
+  //       await createSubCategory(subCategoryData).unwrap();
+  //       message.success("Subcategory created successfully!");
+  //     } else {
+  //       const categoryData = {
+  //         name: values.categoryName,
+  //         image: imageFile ? imageFile.name : "",
+  //       };
+
+  //       if (!categoryData.name) {
+  //         message.error("Category name is required.");
+  //         return;
+  //       }
+
+  //       await createCategory(categoryData).unwrap();
+  //       message.success("Category created successfully!");
+  //     }
+
+  //     form.resetFields();
+  //     setFileList([]);
+  //   } catch (error) {
+  //     console.error(error);
+  //     message.error(
+  //       error?.data?.message || "Something went wrong during submission!"
+  //     );
+  //   }
+  // };
+
   const onFinish = async (values) => {
     try {
-      if (selected === "Sub Category") {
-        const subCategoryData = {
-          name: values.subCategoryName,
-          image: imageFile ? imageFile.name : "",
-          categoryId: values.parentCategory, // 🔥 FIXED THIS LINE
-        };
+      const formData = new FormData();
 
-        if (!subCategoryData.name || !subCategoryData.categoryId) {
+      if (selected === "Sub Category") {
+        if (!values.subCategoryName || !values.parentCategory) {
           message.error("Please provide subcategory name and parent category.");
           return;
         }
 
-        await createSubCategory(subCategoryData).unwrap();
+        formData.append("name", values.subCategoryName);
+        formData.append("categoryId", values.parentCategory);
+        if (imageFile) {
+          formData.append("image", imageFile);
+        }
+
+        await createSubCategory(formData).unwrap();
         message.success("Subcategory created successfully!");
       } else {
-        const categoryData = {
-          name: values.categoryName,
-          image: imageFile ? imageFile.name : "",
-        };
-
-        if (!categoryData.name) {
+        if (!values.categoryName) {
           message.error("Category name is required.");
           return;
         }
 
-        await createCategory(categoryData).unwrap();
+        formData.append("name", values.categoryName);
+        if (imageFile) {
+          formData.append("image", imageFile);
+        }
+
+        await createCategory(formData).unwrap();
         message.success("Category created successfully!");
       }
 
       form.resetFields();
       setFileList([]);
+      setImageFile(null);
     } catch (error) {
       console.error(error);
       message.error(

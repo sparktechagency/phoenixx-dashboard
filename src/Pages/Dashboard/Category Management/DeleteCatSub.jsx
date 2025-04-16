@@ -1,16 +1,14 @@
 import React, { useState } from "react";
-import {
-  Button,
-  Form,
-  Input,
-  Select,
-  message,
-  ConfigProvider,
-  Segmented,
-} from "antd";
+import { Button, Form, Select, message, Segmented } from "antd";
 import { MdInfo } from "react-icons/md";
-import { useDeleteCategoryMutation } from "../../../redux/apiSlices/categoryApi";
-import { useDeleteSubCategoryMutation } from "../../../redux/apiSlices/subCategoryApi";
+import {
+  useCategoryQuery,
+  useDeleteCategoryMutation,
+} from "../../../redux/apiSlices/categoryApi";
+import {
+  useDeleteSubCategoryMutation,
+  useGetSubCategoriesByCatIDQuery,
+} from "../../../redux/apiSlices/subCategoryApi";
 
 const DeleteCatSub = ({ isSelected, initialData = null }) => {
   const [form] = Form.useForm();
@@ -18,18 +16,28 @@ const DeleteCatSub = ({ isSelected, initialData = null }) => {
 
   const [deleteCategory] = useDeleteCategoryMutation();
   const [deleteSubCategory] = useDeleteSubCategoryMutation();
+  const { data: categoryData } = useCategoryQuery();
 
-  const categoryOptions = [
-    { value: "cat1", label: "Category 1" },
-    { value: "cat2", label: "Category 2" },
-    { value: "cat3", label: "Category 3" },
-  ];
+  const categoryOptions = categoryData?.data?.result?.map((cat) => {
+    return {
+      value: cat?.category?.id,
+      label: cat?.category?.name,
+    };
+  });
 
-  const subCategoryOptions = [
-    { value: "subCat1", label: "Sub Category 1" },
-    { value: "subCat2", label: "Sub Category 2" },
-    { value: "subCat3", label: "Sub Category 3" },
-  ];
+  const selectedCategoryId = Form.useWatch("category", form);
+
+  const { data: subCategoryData, isFetching: isSubCategoriesLoading } =
+    useGetSubCategoriesByCatIDQuery(selectedCategoryId, {
+      skip: !selectedCategoryId,
+    });
+
+  console.log("ss", subCategoryData?.data);
+  const subCategoryOptions =
+    subCategoryData?.data?.map((sub) => ({
+      value: sub?._id,
+      label: sub?.name,
+    })) || [];
 
   const handleSelected = (value) => {
     setSelected(value);
@@ -43,8 +51,13 @@ const DeleteCatSub = ({ isSelected, initialData = null }) => {
         message.success("Category deleted successfully!");
       } else {
         const id = values.subCategory;
-        await deleteSubCategory(id).unwrap();
-        message.success("Subcategory deleted successfully!");
+        console.log("sid", id);
+        const res = await deleteSubCategory(id).unwrap();
+        if (res?.success === true) {
+          message.success("Subcategory deleted successfully!");
+        } else {
+          message.error("Failed to delete subcategory!");
+        }
       }
       form.resetFields();
     } catch (error) {
@@ -82,20 +95,19 @@ const DeleteCatSub = ({ isSelected, initialData = null }) => {
             </Form.Item>
 
             {selected === "Sub Category" && (
-              <>
-                <Form.Item
-                  label="Select Sub Category"
-                  name="subCategory"
-                  rules={[
-                    { required: true, message: "Please select a subcategory!" },
-                  ]}
-                >
-                  <Select
-                    placeholder="Select Sub Category"
-                    options={subCategoryOptions}
-                  />
-                </Form.Item>
-              </>
+              <Form.Item
+                label="Select Sub Category"
+                name="subCategory"
+                rules={[
+                  { required: true, message: "Please select a subcategory!" },
+                ]}
+              >
+                <Select
+                  placeholder="Select Sub Category"
+                  loading={isSubCategoriesLoading}
+                  options={subCategoryOptions}
+                />
+              </Form.Item>
             )}
 
             <Form.Item>

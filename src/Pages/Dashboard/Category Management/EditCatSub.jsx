@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Form,
@@ -6,12 +6,19 @@ import {
   Upload,
   Select,
   message,
-  ConfigProvider,
   Segmented,
+  Image,
 } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
-import { useCategoryQuery } from "../../../redux/apiSlices/categoryApi";
-import { useGetSubCategoriesByCatIDQuery } from "../../../redux/apiSlices/subCategoryApi";
+import {
+  useCategoryQuery,
+  useUpdateCategoryMutation,
+} from "../../../redux/apiSlices/categoryApi";
+import {
+  useGetSubCategoriesByCatIDQuery,
+  useUpdateSubCategoryMutation,
+} from "../../../redux/apiSlices/subCategoryApi";
+import { getImageUrl } from "../../../components/common/ImageUrl";
 
 const { Dragger } = Upload;
 
@@ -33,42 +40,48 @@ const beforeUpload = (file) => {
 const EditCatSub = ({ isSelected, initialData = null }) => {
   const [form] = Form.useForm();
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedParentCategory, setSelectedParentCategory] = useState(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [fileList, setFileList] = useState([]);
+  const [existingImage, setExistingImage] = useState(null);
+  const [selected, setSelected] = useState("Category");
 
-  // Fetch category data
+  const [updateCategory] = useUpdateCategoryMutation();
+  const [updateSubCategory] = useUpdateSubCategoryMutation();
+
   const { data: categoryData, isLoading } = useCategoryQuery();
   const categories = categoryData?.data?.result || [];
-  console.log("categories", categories);
 
-  // Map categories to options format required by Select component
   const categoryOptions = categories.map((cat) => ({
     value: cat.category.id,
     label: cat.category.name,
   }));
 
-  console.log(categoryOptions);
+  const { data: subCategoryData, isFetching: isSubCategoriesLoading } =
+    useGetSubCategoriesByCatIDQuery(selectedCategory, {
+      skip: !selectedCategory,
+    });
 
-  const { data: subCategoryData } =
-    useGetSubCategoriesByCatIDQuery(selectedCategory);
+  // Log the full subcategory data structure to debug
+  console.log("Full subcategory data:", subCategoryData);
+
   const subCategories = subCategoryData?.data || [];
-  // console.log("SubC", subCategoryData?.data);
-  console.log("selectedCategory", selectedCategory);
+  console.log("Parsed subCategories:", subCategories);
 
-  const subCategoryOptions = subCategories.map((sub) => ({
-    value: sub.id,
-    label: sub.name,
-  }));
+  // Fix the subcategory options mapping
+  const subCategoryOptions = subCategories.map((sub) => {
+    console.log("Individual subcategory object:", sub);
+    return {
+      value:
+        sub.id ||
+        sub._id ||
+        (sub.subcategory && (sub.subcategory.id || sub.subcategory._id)),
+      label: sub.name || (sub.subcategory && sub.subcategory.name),
+    };
+  });
 
-  // const subCategoryOptions = [
-  //   {
-  //     value: "cat.category.id",
-  //     label: "cat.category.name",
-  //   },
-  // ];
+  console.log("Modified subcategory options:", subCategoryOptions);
 
-  // Handle image file changes
   const handleImageChange = ({ fileList }) => {
     setFileList(fileList);
     if (fileList.length > 0) {
@@ -78,42 +91,154 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
     }
   };
 
+  // Fetch and populate category data
+  useEffect(() => {
+    if (selected === "Category" && selectedCategory) {
+      const selectedCategoryData = categories.find(
+        (cat) => cat.category.id === selectedCategory
+      );
+
+      if (selectedCategoryData) {
+        form.setFieldsValue({
+          categoryName: selectedCategoryData.category.name,
+        });
+
+        if (selectedCategoryData.category.image) {
+          setExistingImage(selectedCategoryData.category.image);
+        } else {
+          setExistingImage(null);
+        }
+      }
+    }
+  }, [selectedCategory, categories, form, selected]);
+
+  // Fetch and populate subcategory data
+  useEffect(() => {
+    if (
+      selected === "Sub Category" &&
+      selectedSubCategory &&
+      subCategories.length > 0
+    ) {
+      console.log("Looking for subcategory with ID:", selectedSubCategory);
+
+      // Find subcategory trying multiple possible structures
+      const selectedSubCategoryData = subCategories.find(
+        (sub) =>
+          sub.id === selectedSubCategory ||
+          sub._id === selectedSubCategory ||
+          (sub.subcategory && sub.subcategory.id === selectedSubCategory) ||
+          (sub.subcategory && sub.subcategory._id === selectedSubCategory)
+      );
+
+      console.log("Found subcategory data:", selectedSubCategoryData);
+
+      if (selectedSubCategoryData) {
+        const name =
+          selectedSubCategoryData.name ||
+          (selectedSubCategoryData.subcategory &&
+            selectedSubCategoryData.subcategory.name);
+
+        form.setFieldsValue({
+          subCategoryName: name,
+        });
+
+        const image =
+          selectedSubCategoryData.image ||
+          (selectedSubCategoryData.subcategory &&
+            selectedSubCategoryData.subcategory.image);
+
+        if (image) {
+          setExistingImage(image);
+        } else {
+          setExistingImage(null);
+        }
+      }
+    }
+  }, [selectedSubCategory, subCategories, form, selected]);
+
   const onFinish = async (values) => {
     try {
-      const categoryData = {
-        name:
-          isSelected === "Category"
-            ? values.categoryName
-            : values.subCategoryName,
-        image: imageFile ? imageFile.name : "",
-      };
+      if (selected === "Category" && selectedCategory) {
+        const categoryData = new FormData();
+        categoryData.append("name", values.categoryName);
 
-      if (isSelected === "Sub Category" && values.parentCategory) {
-        categoryData.parentCategory = values.parentCategory;
+        if (imageFile) {
+          categoryData.append("image", imageFile);
+        }
+
+        const res = await updateCategory({
+          id: selectedCategory,
+          updatedData: categoryData,
+        });
+
+        if (res.data) {
+          message.success("Category updated successfully!");
+        } else {
+          message.error("Failed to update category");
+        }
+      } else if (selected === "Sub Category" && selectedSubCategory) {
+        const subCategoryData = new FormData();
+        subCategoryData.append("name", values.subCategoryName);
+        subCategoryData.append("parentCategory", selectedCategory);
+
+        if (imageFile) {
+          subCategoryData.append("image", imageFile);
+        }
+
+        console.log("Updating subcategory with data:", {
+          id: selectedSubCategory,
+          name: values.subCategoryName,
+          parentCategory: selectedCategory,
+          hasImage: !!imageFile,
+        });
+
+        const res = await updateSubCategory({
+          id: selectedSubCategory,
+          updatedData: subCategoryData,
+        });
+
+        if (res.data) {
+          message.success("Subcategory updated successfully!");
+        } else {
+          message.error("Failed to update subcategory");
+        }
       }
 
-      message.success(`${isSelected} created successfully!`);
-
-      // Reset form
-      form.resetFields();
       setFileList([]);
+      setImageFile(null);
     } catch (error) {
       message.error("Something went wrong!");
       console.error(error);
     }
   };
 
-  const [selected, setSelected] = useState("Category");
-
   const handleSelected = (value) => {
     setSelected(value);
-    console.log(value);
+    form.resetFields();
+    setSelectedCategory(null);
+    setSelectedSubCategory(null);
+    setExistingImage(null);
+    setFileList([]);
   };
 
-  // Handle category selection
   const handleCategoryChange = (value) => {
+    console.log("Category changed to:", value);
     setSelectedCategory(value);
-    console.log("Selected category:", value);
+
+    // Reset subcategory when category changes
+    if (selected === "Sub Category") {
+      setSelectedSubCategory(null);
+      setExistingImage(null);
+      form.setFieldsValue({
+        subCategory: undefined,
+        subCategoryName: undefined,
+      });
+    }
+  };
+
+  const handleSubCategoryChange = (value) => {
+    console.log("Subcategory changed to:", value);
+    setSelectedSubCategory(value);
   };
 
   return (
@@ -135,8 +260,6 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
             autoComplete="off"
             className="bg-white p-4 border rounded-lg"
           >
-            {/* Category Form Fields */}
-
             <Form.Item
               label="Select Category"
               name="category"
@@ -150,8 +273,7 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
               />
             </Form.Item>
 
-            {/* Subcategory Form Fields */}
-            {selected === "Sub Category" ? (
+            {selected === "Sub Category" && (
               <>
                 <Form.Item
                   label="Select Sub Category"
@@ -163,6 +285,11 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
                   <Select
                     placeholder="Select Sub Category"
                     options={subCategoryOptions}
+                    onChange={handleSubCategoryChange}
+                    disabled={
+                      !selectedCategory || subCategoryOptions.length === 0
+                    }
+                    loading={isSubCategoriesLoading}
                   />
                 </Form.Item>
 
@@ -176,10 +303,12 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
                     },
                   ]}
                 >
-                  <Input />
+                  <Input disabled={!selectedSubCategory} />
                 </Form.Item>
               </>
-            ) : (
+            )}
+
+            {selected === "Category" && (
               <Form.Item
                 label="Category Name"
                 name="categoryName"
@@ -190,20 +319,24 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
                   },
                 ]}
               >
-                <Input />
+                <Input disabled={!selectedCategory} />
               </Form.Item>
             )}
 
-            <Form.Item
-              label="Upload Image"
-              name="image"
-              rules={[
-                {
-                  required: !fileList.length,
-                  message: "Please upload an image!",
-                },
-              ]}
-            >
+            {existingImage && (
+              <div className="mb-4">
+                <p className="mb-2">Current Image:</p>
+                <img
+                  src={getImageUrl(existingImage)}
+                  alt="Current image"
+                  width={100}
+                  height={100}
+                  className="border rounded"
+                />
+              </div>
+            )}
+
+            <Form.Item label="Upload New Image" name="image">
               <Upload
                 listType="picture"
                 beforeUpload={beforeUpload}
@@ -214,6 +347,10 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
                 customRequest={({ onSuccess }) =>
                   setTimeout(() => onSuccess("ok"), 0)
                 }
+                disabled={
+                  (selected === "Category" && !selectedCategory) ||
+                  (selected === "Sub Category" && !selectedSubCategory)
+                }
               >
                 <Button icon={<InboxOutlined />}>Click to Upload</Button>
               </Upload>
@@ -223,8 +360,12 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
               <Button
                 htmlType="submit"
                 className="bg-smart/80 border-none text-white min-w-20 min-h-10 text-xs rounded-lg"
+                disabled={
+                  !selectedCategory ||
+                  (selected === "Sub Category" && !selectedSubCategory)
+                }
               >
-                Add {selected}
+                Update {selected}
               </Button>
             </Form.Item>
           </Form>

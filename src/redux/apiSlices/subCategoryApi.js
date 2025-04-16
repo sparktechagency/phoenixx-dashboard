@@ -15,7 +15,7 @@ const subCategorySlice = api.injectEndpoints({
     updateSubCategory: builder.mutation({
       query: ({ id, updatedData }) => {
         return {
-          url: `/categories/${id}`,
+          url: `/subcategories/${id}`,
           method: "PATCH",
           body: updatedData,
         };
@@ -25,7 +25,7 @@ const subCategorySlice = api.injectEndpoints({
     deleteSubCategory: builder.mutation({
       query: (id) => {
         return {
-          url: `/categories/${id}`,
+          url: `/subcategories/${id}`,
           method: "DELETE",
         };
       },
