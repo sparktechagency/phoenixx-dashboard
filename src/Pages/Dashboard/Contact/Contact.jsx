@@ -4,9 +4,14 @@ import { LiaPhoneVolumeSolid } from "react-icons/lia";
 import { PiMapPinAreaLight } from "react-icons/pi";
 import { CiMail } from "react-icons/ci";
 import ButtonEDU from "../../../components/common/ButtonEDU";
+import { useContactQuery } from "../../../redux/apiSlices/contact";
 
 const Contact = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { data: contactInfos, isLoading, isError } = useContactQuery();
+
+  console.log(contactInfos);
+
   const [contactInfo, setContactInfo] = useState({
     phone: "(+62) 8896-2220 | (021) 111 444 90",
     email: "demo@gmail.com",
