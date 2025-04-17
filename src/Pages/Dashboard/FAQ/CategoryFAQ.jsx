@@ -1,414 +1,365 @@
-import React, { useState } from "react";
-import { Collapse, Modal, Form, Input, Select, Button, message } from "antd";
+import React, { useEffect, useState } from "react";
+import { Button, Card, Collapse, Empty, Form, message, Select } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { AddEditModal, DeleteModal } from "./Modals";
+import { FiEdit3 } from "react-icons/fi";
+import { ImBin } from "react-icons/im";
 import {
-  PlusOutlined,
-  CaretRightOutlined,
-  EditOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+  useCategoryFAQQuery,
+  useCreateFAQCategoryMutation,
+  useDeleteFAQCategoryMutation,
+  useUpdateFAQCategoryMutation,
+} from "../../../redux/apiSlices/faqCategoryApi";
+import {
+  useGetFAQQuery,
+  useCreateFAQMutation,
+  useUpdateFAQMutation,
+  useDeleteFAQMutation,
+} from "../../../redux/apiSlices/faqApi";
 
 const { Panel } = Collapse;
 const { Option } = Select;
 
 const CategoryFAQ = () => {
-  // State for categories and FAQs
-  const [categories, setCategories] = useState([
-    { id: "1", name: "General" },
-    { id: "2", name: "Pricing" },
-    { id: "3", name: "Support" },
-  ]);
-
-  const [faqs, setFaqs] = useState([
-    {
-      id: "1",
-      categoryId: "1",
-      question: "What is this service about?",
-      answer:
-        "This service helps you manage and organize frequently asked questions by categories.",
-    },
-    {
-      id: "2",
-      categoryId: "1",
-      question: "How do I get started?",
-      answer:
-        "Simply add a category, then add questions and answers within that category.",
-    },
-    {
-      id: "3",
-      categoryId: "2",
-      question: "How much does it cost?",
-      answer:
-        "Our pricing is flexible based on your needs. Contact sales for more information.",
-    },
-    {
-      id: "4",
-      categoryId: "3",
-      question: "How can I get help?",
-      answer: "You can reach our support team via email or phone 24/7.",
-    },
-  ]);
-
-  // Modal states
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState("faq"); // "faq" or "category"
-  const [editItem, setEditItem] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
-  const [deleteType, setDeleteType] = useState(""); // "faq" or "category"
-
-  // Form instance
   const [form] = Form.useForm();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [modalType, setModalType] = useState("faq");
+  const [deleteType, setDeleteType] = useState("faq");
+  const [editItem, setEditItem] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const { data: faqCategory, isLoading, isError } = useCategoryFAQQuery();
+  const [createFAQC] = useCreateFAQCategoryMutation();
+  const [updateFAQC] = useUpdateFAQCategoryMutation();
+  const [deleteFAQC] = useDeleteFAQCategoryMutation();
 
-  // Active keys for collapse
-  const [activeKeys, setActiveKeys] = useState(["1"]);
+  const [createFAQ] = useCreateFAQMutation();
+  const [updateFAQ] = useUpdateFAQMutation();
+  const [deleteFAQ] = useDeleteFAQMutation();
+  const { data: categoryFaqs, isLoading: faqsLoading } = useGetFAQQuery(
+    selectedCategoryId,
+    { skip: !selectedCategoryId }
+  );
 
-  // Show modal to add a new FAQ
-  const showAddFAQModal = () => {
-    setModalType("faq");
-    setEditItem(null);
+  console.log("faqC", faqCategory?.data);
+  console.log("categoryFaqs", categoryFaqs?.data?.data); // Check the actual structure
+
+  useEffect(() => {
+    if (faqCategory?.data) {
+      const formatted = faqCategory.data.map((faq) => ({
+        id: faq._id,
+        name: faq.name,
+      }));
+      setCategories(formatted);
+    }
+  }, [faqCategory]);
+
+  // Store the fetched FAQs in state
+  const [faqs, setFaqs] = useState([]);
+
+  // Update faqs state when categoryFaqs data changes - fixed to handle different response structures
+  useEffect(() => {
+    if (categoryFaqs) {
+      // Check the structure of categoryFaqs and extract the data accordingly
+      const faqsData = categoryFaqs?.data?.data || categoryFaqs || [];
+
+      // If faqsData is an array, we can map through it
+      if (Array.isArray(faqsData)) {
+        const formattedFaqs = faqsData.map((faq) => ({
+          id: faq._id,
+          categoryId: faq.category,
+          question: faq.question,
+          answer: faq.answer,
+        }));
+        setFaqs(formattedFaqs);
+      } else {
+        console.error("Unexpected response format for FAQs:", categoryFaqs);
+        setFaqs([]);
+      }
+    }
+  }, [categoryFaqs]);
+
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const openAddModal = (type) => {
     form.resetFields();
-    setIsModalOpen(true);
-  };
-
-  // Show modal to add a new category
-  const showAddCategoryModal = () => {
-    setModalType("category");
+    setModalType(type);
     setEditItem(null);
-    form.resetFields();
     setIsModalOpen(true);
   };
 
-  // Show modal to edit an FAQ
-  const showEditFAQModal = (faq) => {
-    setModalType("faq");
-    setEditItem(faq);
-    form.setFieldsValue({
-      categoryId: faq.categoryId,
-      question: faq.question,
-      answer: faq.answer,
-    });
+  const openEditModal = (item, type) => {
+    form.setFieldsValue(item);
+    setModalType(type);
+    setEditItem(item);
     setIsModalOpen(true);
   };
 
-  // Show modal to edit a category
-  const showEditCategoryModal = (category) => {
-    setModalType("category");
-    setEditItem(category);
-    form.setFieldsValue({
-      name: category.name,
-    });
-    setIsModalOpen(true);
-  };
-
-  // Show delete confirmation modal
-  const showDeleteModal = (item, type) => {
-    setItemToDelete(item);
+  const openDeleteModal = (item, type) => {
+    setSelectedItem(item);
     setDeleteType(type);
     setIsDeleteModalOpen(true);
   };
 
-  // Handle save for both FAQ and Category
-  const handleSave = (values) => {
-    if (modalType === "faq") {
-      handleSaveFAQ(values);
+  const handleSave = async (values) => {
+    if (modalType === "category") {
+      if (editItem) {
+        try {
+          const res = await updateFAQC({
+            id: editItem.id,
+            updatedData: values,
+          }).unwrap();
+          if (res.success) {
+            message.success("FAQ Category Updated");
+            setCategories((prev) =>
+              prev.map((cat) =>
+                cat.id === editItem.id ? { ...cat, ...values } : cat
+              )
+            );
+          } else {
+            message.error("Failed to update category");
+          }
+        } catch (err) {
+          console.error(err);
+          message.error("Update failed");
+        }
+      } else {
+        try {
+          const res = await createFAQC(values).unwrap();
+          if (res.success) {
+            message.success("FAQ Category Added");
+            setCategories((prev) => [
+              ...prev,
+              { id: res.data._id, name: res.data.name },
+            ]);
+          } else {
+            message.error("Failed to create category");
+          }
+        } catch (err) {
+          console.error(err);
+          message.error("Creation failed");
+        }
+      }
     } else {
-      handleSaveCategory(values);
-    }
-  };
+      if (editItem) {
+        // Handle FAQ update logic here
+        try {
+          const res = await updateFAQ({
+            id: editItem.id,
+            updatedData: values,
+          }).unwrap();
 
-  // Handle save for FAQ
-  const handleSaveFAQ = (values) => {
-    if (editItem) {
-      // Update existing FAQ
-      setFaqs(
-        faqs.map((item) =>
-          item.id === editItem.id ? { ...item, ...values } : item
-        )
-      );
-      message.success("FAQ updated successfully!");
-    } else {
-      // Add new FAQ
-      const newId = (
-        Math.max(...faqs.map((faq) => parseInt(faq.id)), 0) + 1
-      ).toString();
-      setFaqs([...faqs, { id: newId, ...values }]);
-      message.success("FAQ added successfully!");
+          if (res.success) {
+            message.success("FAQ Updated Successfully");
+            setFaqs((prev) =>
+              prev.map((faq) =>
+                faq.id === editItem.id ? { ...faq, ...values } : faq
+              )
+            );
+          } else {
+            message.error("Failed to Update FAQ");
+          }
+        } catch (err) {
+          console.error(err);
+          message.error("Update failed");
+        }
+      } else {
+        try {
+          // Create new FAQ
+          const res = await createFAQ({
+            ...values,
+            category: values.categoryId,
+          }).unwrap();
+
+          if (res.success) {
+            message.success("FAQ Added");
+            // Refresh faqs if the newly added FAQ belongs to the selected category
+            if (selectedCategoryId === values.categoryId) {
+              setFaqs((prev) => [
+                ...prev,
+                {
+                  id: res.data._id,
+                  categoryId: res.data.category,
+                  question: res.data.question,
+                  answer: res.data.answer,
+                },
+              ]);
+            }
+          } else {
+            message.error("Failed to create FAQ");
+          }
+        } catch (err) {
+          console.error(err);
+          message.error("Creation failed");
+        }
+      }
     }
+
     setIsModalOpen(false);
   };
 
-  // Handle save for Category
-  const handleSaveCategory = (values) => {
-    if (editItem) {
-      // Update existing category
-      setCategories(
-        categories.map((item) =>
-          item.id === editItem.id ? { ...item, ...values } : item
-        )
-      );
-      message.success("Category updated successfully!");
+  const handleDelete = async () => {
+    if (deleteType === "category") {
+      try {
+        // Use selectedItem.id instead of selectedCategoryId
+        const res = await deleteFAQC(selectedItem.id).unwrap();
+        if (res.success) {
+          message.success("Category Successfully Deleted");
+          // Update UI after successful deletion
+          setCategories((prev) =>
+            prev.filter((cat) => cat.id !== selectedItem.id)
+          );
+          setFaqs((prev) =>
+            prev.filter((faq) => faq.categoryId !== selectedItem.id)
+          );
+        } else {
+          message.error("Failed to Delete Category");
+        }
+      } catch (err) {
+        console.error(err);
+        message.error("Delete failed");
+      }
     } else {
-      // Add new category
-      const newId = (
-        Math.max(...categories.map((cat) => parseInt(cat.id)), 0) + 1
-      ).toString();
-      setCategories([...categories, { id: newId, ...values }]);
-      message.success("Category added successfully!");
-    }
-    setIsModalOpen(false);
-  };
-
-  // Handle delete for both FAQ and Category
-  const handleDelete = () => {
-    if (deleteType === "faq") {
-      setFaqs(faqs.filter((faq) => faq.id !== itemToDelete.id));
-      message.success("FAQ deleted successfully!");
-    } else {
-      // Delete category and all FAQs in that category
-      setCategories(categories.filter((cat) => cat.id !== itemToDelete.id));
-      setFaqs(faqs.filter((faq) => faq.categoryId !== itemToDelete.id));
-      message.success("Category and its FAQs deleted successfully!");
+      // For FAQ deletion
+      try {
+        // Use selectedItem.id instead of faq.id
+        const res = await deleteFAQ(selectedItem.id).unwrap();
+        if (res.success) {
+          message.success("FAQ Successfully Deleted");
+          // Update UI after successful deletion
+          setFaqs((prev) => prev.filter((faq) => faq.id !== selectedItem.id));
+        } else {
+          message.error("Failed to Delete FAQ");
+        }
+      } catch (err) {
+        console.error(err);
+        message.error("Delete failed");
+      }
     }
     setIsDeleteModalOpen(false);
   };
 
-  // Group FAQs by category
-  const getFAQsByCategory = () => {
-    return categories.map((category) => {
-      const categoryFaqs = faqs.filter((faq) => faq.categoryId === category.id);
-
-      return {
-        categoryId: category.id,
-        categoryName: category.name,
-        faqs: categoryFaqs,
-      };
-    });
+  // Handle panel change to load FAQs for the selected category
+  const handlePanelChange = (key) => {
+    if (key) {
+      setSelectedCategoryId(key);
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Category-based FAQs</h1>
-        <div className="flex gap-3">
+    <Card
+      title={<p className="text-black">Category FAQs</p>}
+      extra={
+        <div className="flex gap-2">
           <Button
-            type="primary"
             icon={<PlusOutlined />}
-            onClick={showAddCategoryModal}
-            className="bg-blue-600"
+            onClick={() => openAddModal("category")}
           >
             Add Category
           </Button>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={showAddFAQModal}
-            className="bg-green-600"
-          >
+          <Button icon={<PlusOutlined />} onClick={() => openAddModal("faq")}>
             Add FAQ
           </Button>
         </div>
-      </div>
-
-      {/* Display Categories and FAQs */}
-      <div
-        className="h-[35em]  overflow-y-auto [&::-webkit-scrollbar]:w-0
-  [&::-webkit-scrollbar-track]:rounded-full
-  [&::-webkit-scrollbar-track]:bg-gray-100
-  [&::-webkit-scrollbar-thumb]:rounded-full
-  [&::-webkit-scrollbar-thumb]:bg-gray-300
-  dark:[&::-webkit-scrollbar-track]:bg-neutral-700
-  dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
-      >
-        <div>
-          {getFAQsByCategory().map((categoryGroup) => (
-            <div
-              key={categoryGroup.categoryId}
-              className="bg-white rounded-lg shadow-md"
-            >
-              <div className="flex justify-between items-center px-6 py-4 bg-gray-100 rounded-t-lg">
-                <h2 className="text-xl font-semibold">
-                  {categoryGroup.categoryName}
-                </h2>
-                <div className="flex gap-2">
-                  <Button
-                    type="text"
-                    icon={<EditOutlined />}
-                    onClick={() =>
-                      showEditCategoryModal({
-                        id: categoryGroup.categoryId,
-                        name: categoryGroup.categoryName,
-                      })
-                    }
-                    className="text-blue-600 hover:text-blue-800"
+      }
+    >
+      {isLoading ? (
+        <div>Loading categories...</div>
+      ) : categories.length === 0 ? (
+        <Empty description="No categories found" />
+      ) : (
+        <Collapse accordion onChange={handlePanelChange}>
+          {categories.map((category) => (
+            <Panel
+              header={
+                <div className="flex justify-between items-center">
+                  <span>{category.name}</span>
+                  <div
+                    className="flex gap-2"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    Edit
-                  </Button>
-                  <Button
-                    type="text"
-                    icon={<DeleteOutlined />}
-                    onClick={() =>
-                      showDeleteModal(
-                        {
-                          id: categoryGroup.categoryId,
-                          name: categoryGroup.categoryName,
-                        },
-                        "category"
-                      )
-                    }
-                    className="text-red-600 hover:text-red-800"
-                    danger
-                  >
-                    Delete
-                  </Button>
+                    <Button
+                      className="w-6 h-6 text-smart"
+                      icon={<FiEdit3 />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(category, "category");
+                      }}
+                    />
+                    <Button
+                      className="w-6 h-6 text-[#ff4e50]"
+                      icon={<ImBin />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDeleteModal(category, "category");
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-
-              {categoryGroup.faqs.length > 0 ? (
-                <Collapse
-                  bordered={false}
-                  expandIcon={({ isActive }) => (
-                    <CaretRightOutlined rotate={isActive ? 90 : 0} />
-                  )}
-                  className="bg-white"
-                >
-                  {categoryGroup.faqs.map((faq) => (
-                    <Panel
+              }
+              key={category.id}
+            >
+              {selectedCategoryId === category.id && faqsLoading ? (
+                <div>Loading FAQs...</div>
+              ) : faqs.filter((faq) => faq.categoryId === category.id)
+                  .length === 0 ? (
+                <Empty description="No FAQs in this category" />
+              ) : (
+                faqs
+                  .filter((faq) => faq.categoryId === category.id)
+                  .map((faq) => (
+                    <Card
                       key={faq.id}
-                      header={
-                        <div className="flex justify-between items-center w-full pr-8">
-                          <span>{faq.question}</span>
-                          <div
-                            className="flex gap-2"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Button
-                              type="text"
-                              icon={<EditOutlined />}
-                              onClick={() => showEditFAQModal(faq)}
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              type="text"
-                              icon={<DeleteOutlined />}
-                              onClick={() => showDeleteModal(faq, "faq")}
-                              className="text-red-600 hover:text-red-800"
-                              danger
-                            >
-                              Delete
-                            </Button>
-                          </div>
+                      title={
+                        <p className="text-black font-bold">
+                          Q: {faq.question}
+                        </p>
+                      }
+                      extra={
+                        <div className="flex gap-2">
+                          <Button
+                            className="w-5 h-6 text-smart"
+                            icon={<FiEdit3 />}
+                            onClick={() => openEditModal(faq, "faq")}
+                          />
+                          <Button
+                            className="w-5 h-6 text-[#ff4e50]"
+                            icon={<ImBin />}
+                            onClick={() => openDeleteModal(faq, "faq")}
+                          />
                         </div>
                       }
+                      className="mb-4"
                     >
-                      <div className="pl-4 border-l-2 border-blue-500">
-                        <p>{faq.answer}</p>
-                      </div>
-                    </Panel>
-                  ))}
-                </Collapse>
-              ) : (
-                <div className="p-6 text-center text-gray-500">
-                  No FAQs in this category yet
-                </div>
+                      <span className="text-black font-bold">A:</span>{" "}
+                      {faq.answer}
+                    </Card>
+                  ))
               )}
-            </div>
+            </Panel>
           ))}
-        </div>
-      </div>
-      {/* Add/Edit Modal */}
-      <Modal
-        title={`${editItem ? "Edit" : "Add"} ${
-          modalType === "faq" ? "FAQ" : "Category"
-        }`}
-        open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        footer={null}
-        width={600}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSave}
-          className="mt-4"
-        >
-          {modalType === "category" ? (
-            <Form.Item
-              label="Category Name"
-              name="name"
-              rules={[
-                { required: true, message: "Please enter category name" },
-              ]}
-            >
-              <Input placeholder="Enter category name" />
-            </Form.Item>
-          ) : (
-            <>
-              <Form.Item
-                label="Category"
-                name="categoryId"
-                rules={[
-                  { required: true, message: "Please select a category" },
-                ]}
-              >
-                <Select placeholder="Select category">
-                  {categories.map((category) => (
-                    <Option key={category.id} value={category.id}>
-                      {category.name}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <Form.Item
-                label="Question"
-                name="question"
-                rules={[
-                  { required: true, message: "Please enter the question" },
-                ]}
-              >
-                <Input placeholder="Enter the question" />
-              </Form.Item>
-              <Form.Item
-                label="Answer"
-                name="answer"
-                rules={[{ required: true, message: "Please enter the answer" }]}
-              >
-                <Input.TextArea rows={5} placeholder="Enter the answer" />
-              </Form.Item>
-            </>
-          )}
+        </Collapse>
+      )}
 
-          <div className="flex justify-end gap-3 mt-6">
-            <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button type="primary" htmlType="submit">
-              Save
-            </Button>
-          </div>
-        </Form>
-      </Modal>
+      {/* Modals */}
+      <AddEditModal
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        form={form}
+        handleSave={handleSave}
+        modalType={modalType}
+        editItem={editItem}
+        categories={categories}
+      />
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        title={`Delete ${deleteType === "faq" ? "FAQ" : "Category"}`}
-        open={isDeleteModalOpen}
-        onCancel={() => setIsDeleteModalOpen(false)}
-        footer={null}
-      >
-        <p>
-          {deleteType === "faq"
-            ? "Are you sure you want to delete this FAQ?"
-            : "Are you sure you want to delete this category? All FAQs in this category will also be deleted."}
-        </p>
-        <div className="flex justify-end gap-3 mt-6">
-          <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
-          <Button type="primary" danger onClick={handleDelete}>
-            Delete
-          </Button>
-        </div>
-      </Modal>
-    </div>
+      <DeleteModal
+        isDeleteModalOpen={isDeleteModalOpen}
+        setIsDeleteModalOpen={setIsDeleteModalOpen}
+        handleDelete={handleDelete}
+        deleteType={deleteType}
+      />
+    </Card>
   );
 };
 

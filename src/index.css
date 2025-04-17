@@ -384,3 +384,8 @@ p {
   background-color: #dcdcdc !important;
   border-color: #a6a6a6 !important;
 }
+
+/* Collapse */
+.ant-collapse > .ant-collapse-item > .ant-collapse-header .ant-collapse-arrow {
+  color: #0100fa;
+}
