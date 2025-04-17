@@ -1,18 +1,37 @@
-import React, { useState } from "react";
-import { Table, ConfigProvider, Button, DatePicker, Input } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, DatePicker, Input } from "antd";
 import { FaSortAmountDown } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { IoEye } from "react-icons/io5";
-import DetailsModal from "./DetailsModal"; // Import the modal component
+import DetailsModal from "./DetailsModal";
+import { useGetReportQuery } from "../../../redux/apiSlices/reportApi";
 
 function Report() {
+  const { data: getReport, isError, isLoading } = useGetReportQuery();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [userData, setUserData] = useState(data);
-  const [filteredData, setFilteredData] = useState(data); // Added for filtering search
+  const [userData, setUserData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [isSortedAsc, setIsSortedAsc] = useState(true); // Track sorting order
-  const [searchText, setSearchText] = useState(""); // State for search input
+  const [isSortedAsc, setIsSortedAsc] = useState(true);
+  const [searchText, setSearchText] = useState("");
+
+  useEffect(() => {
+    if (getReport?.data?.result) {
+      const transformed = getReport.data.result.map((report, index) => ({
+        key: index,
+        reportID: report.reporterId,
+        postID: report.postId,
+        postTitle: report.postTitle || "N/A", // fallback if missing
+        author: report.author || "N/A",
+        reportedBy: report.reportedBy || "N/A",
+        status: report.status,
+        date: report.createdAt,
+      }));
+      setUserData(transformed);
+      setFilteredData(transformed);
+    }
+  }, [getReport]);
 
   const rowSelection = {
     selectedRowKeys,
@@ -20,11 +39,12 @@ function Report() {
   };
 
   const handleDeleteSelected = () => {
-    setUserData(userData.filter((user) => !selectedRowKeys.includes(user.key)));
+    const updatedData = userData.filter(
+      (user) => !selectedRowKeys.includes(user.key)
+    );
+    setUserData(updatedData);
+    setFilteredData(updatedData);
     setSelectedRowKeys([]);
-    setFilteredData(
-      filteredData.filter((user) => !selectedRowKeys.includes(user.key))
-    ); // Update filtered data
   };
 
   const handleViewDetails = (record) => {
@@ -47,17 +67,18 @@ function Report() {
     setSearchText(value);
     const filtered = userData.filter(
       (item) =>
-        item.reportID.toLowerCase().includes(value.toLowerCase()) ||
-        item.postTitle.toLowerCase().includes(value.toLowerCase()) ||
-        item.author.toLowerCase().includes(value.toLowerCase()) ||
-        item.reportedBy.toLowerCase().includes(value.toLowerCase())
+        item.reportID?.toLowerCase().includes(value.toLowerCase()) ||
+        item.postTitle?.toLowerCase().includes(value.toLowerCase()) ||
+        item.author?.toLowerCase().includes(value.toLowerCase()) ||
+        item.reportedBy?.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredData(filtered);
   };
 
   const handleDeleteRow = (key) => {
-    setUserData(userData.filter((user) => user.key !== key));
-    setFilteredData(filteredData.filter((user) => user.key !== key));
+    const updatedData = userData.filter((user) => user.key !== key);
+    setUserData(updatedData);
+    setFilteredData(updatedData);
   };
 
   return (
@@ -67,7 +88,7 @@ function Report() {
         <div className="flex gap-3">
           <Button
             icon={<FaSortAmountDown />}
-            onClick={handleSortByDate} // Sort on click
+            onClick={handleSortByDate}
             className="bg-smart text-white border-none h-9"
           >
             Sort by Date
@@ -95,13 +116,14 @@ function Report() {
       <Table
         rowSelection={rowSelection}
         columns={columns(handleViewDetails, handleDeleteRow)}
-        dataSource={filteredData} // Use filtered data
+        dataSource={filteredData}
         size="middle"
+        loading={isLoading}
         pagination={{
           defaultPageSize: 5,
           position: ["bottomRight"],
           size: "default",
-          total: filteredData.length, // Total is based on filtered data
+          total: filteredData.length,
           showSizeChanger: false,
           showQuickJumper: false,
         }}
@@ -164,7 +186,7 @@ const columns = (handleViewDetails, handleDeleteRow) => [
     title: "Date",
     dataIndex: "date",
     key: "date",
-    render: (text) => new Date(text).toLocaleDateString(), // Format Date
+    render: (text) => new Date(text).toLocaleDateString(),
   },
   {
     key: "action",
@@ -178,53 +200,9 @@ const columns = (handleViewDetails, handleDeleteRow) => [
         <RiDeleteBin6Line
           size={20}
           className="hover:text-red-500 cursor-pointer"
-          onClick={() => handleDeleteRow(record.key)} // Delete row
+          onClick={() => handleDeleteRow(record.key)}
         />
       </div>
     ),
-  },
-];
-
-// Updated data with correct date format
-const data = [
-  {
-    key: 1,
-    reportID: "R001",
-    postID: "P001",
-    postTitle: "Title 1",
-    author: "Author 1",
-    reportedBy: "User 1",
-    status: "Under Review",
-    date: "2024-12-11", // Corrected Date Format
-  },
-  {
-    key: 2,
-    reportID: "R002",
-    postID: "P002",
-    postTitle: "Title 2",
-    author: "Author 2",
-    reportedBy: "User 2",
-    status: "Resolve",
-    date: "2024-06-11",
-  },
-  {
-    key: 3,
-    reportID: "R003",
-    postID: "P003",
-    postTitle: "Title 3",
-    author: "Author 3",
-    reportedBy: "User 3",
-    status: "Resolve",
-    date: "2024-12-05",
-  },
-  {
-    key: 4,
-    reportID: "R004",
-    postID: "P004",
-    postTitle: "Title 4",
-    author: "Author 4",
-    reportedBy: "User 4",
-    status: "Under Review",
-    date: "2024-10-01",
   },
 ];
