@@ -3,11 +3,11 @@ import { api } from "../api/baseApi";
 const reportApi = api.injectEndpoints({
   endpoints: (builder) => ({
     giveWarning: builder.mutation({
-      query: ({ id, updatedData }) => {
+      query: ({ id, message }) => {
         return {
           url: `/reports/give-warning/${id}`,
           method: "PATCH",
-          body: updatedData,
+          body: message,
         };
       },
       invalidatesTags: ["Report"],
@@ -36,5 +36,5 @@ const reportApi = api.injectEndpoints({
 export const {
   useGetReportQuery,
   useGiveWarningMutation,
-  useDeleteReportedPostMutation
+  useDeleteReportedPostMutation,
 } = reportApi;

@@ -65,6 +65,15 @@ const announcementApi = api.injectEndpoints({
       },
       invalidatesTags: ["Category"],
     }),
+    deleteAnnouncement: builder.mutation({
+      query: ({ id }) => {
+        return {
+          url: `/announcement-slider/${id}`, // Delete announcement
+          method: "DELETE",
+        };
+      },
+      invalidatesTags: ["Category"],
+    }),
 
     getAnnouncement: builder.query({
       query: () => {
@@ -82,4 +91,5 @@ export const {
   useCreateAnnouncementMutation,
   useGetAnnouncementQuery,
   useUpdateAnnouncementMutation,
+  useDeleteAnnouncementMutation,
 } = announcementApi;

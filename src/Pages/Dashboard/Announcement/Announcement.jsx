@@ -6,6 +6,7 @@ import ButtonEDU from "../../../components/common/ButtonEDU";
 import GetPageName from "../../../components/common/GetPageName";
 import {
   useCreateAnnouncementMutation,
+  useDeleteAnnouncementMutation,
   useGetAnnouncementQuery,
   useUpdateAnnouncementMutation,
 } from "../../../redux/apiSlices/announcementApi";
@@ -21,22 +22,34 @@ function Announcement() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingKey, setDeletingKey] = useState(null);
   const [tableData, setTableData] = useState([]);
+  const [statusMap, setStatusMap] = useState({});
 
-  const { data: getAnnouncement, isLoading } = useGetAnnouncementQuery();
+  const {
+    data: getAnnouncement,
+    isLoading,
+    refetch,
+  } = useGetAnnouncementQuery();
   const [createAnnouncement] = useCreateAnnouncementMutation();
   const [updateAnnouncement] = useUpdateAnnouncementMutation();
+  const [deleteAnnouncement] = useDeleteAnnouncementMutation();
 
   useEffect(() => {
     if (getAnnouncement?.data) {
       const formatted = getAnnouncement.data.map((announcement, index) => ({
-        key: announcement._id, // Use _id for MongoDB ObjectId
+        key: announcement._id,
         serial: index + 1,
         announcementImg: getImageUrl(announcement.image),
-        status: announcement.status,
+        status: capitalizeFirstLetter(announcement.status),
       }));
       setTableData(formatted);
     }
   }, [getAnnouncement]);
+
+  // Helper function to capitalize first letter
+  const capitalizeFirstLetter = (str) => {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
 
   const handleCancel = () => {
     setIsModalOpen(false);
@@ -44,22 +57,21 @@ function Announcement() {
     form.resetFields();
     setEditingKey(null);
   };
+
   const handleFormSubmit = async () => {
     if (!uploadedImage || !uploadedImage.file) {
       message.error("Please upload an image!");
       return;
     }
 
-    // Create a FormData object to send the image and status
     const formData = new FormData();
-    formData.append("image", uploadedImage.file); // Use the file object
-    formData.append("status", form.getFieldValue("status"));
+    formData.append("image", uploadedImage.file);
 
     try {
       if (isEditing) {
         const result = await updateAnnouncement({
-          id: editingKey, // Pass MongoDB ObjectId (editingKey)
-          formData: formData,
+          id: editingKey,
+          formData,
         }).unwrap();
         if (result.success) {
           message.success("Announcement Updated Successfully");
@@ -74,6 +86,7 @@ function Announcement() {
           message.error(result.message || "Failed to add announcement");
         }
       }
+      refetch(); // Refresh the data after successful operation
     } catch (err) {
       console.error("Error:", err);
       message.error(
@@ -86,29 +99,65 @@ function Announcement() {
 
   const handleEdit = (record) => {
     setIsEditing(true);
-    setEditingKey(record.key); // Pass MongoDB ObjectId (record.key)
+    setEditingKey(record.key);
     setUploadedImage(record.announcementImg);
     setIsModalOpen(true);
   };
 
   const handleDelete = (key) => {
-    setDeletingKey(key); // Ensure this is a valid MongoDB ObjectId
+    setDeletingKey(key);
     setIsDeleteModalOpen(true);
   };
 
-  const onConfirmDelete = () => {
-    setTableData(tableData.filter((item) => item.key !== deletingKey));
-    message.success("Announcement deleted!");
+  const onConfirmDelete = async () => {
+    try {
+      const result = await deleteAnnouncement({ id: deletingKey }).unwrap();
+      if (result.success) {
+        message.success("Announcement deleted successfully!");
+        setTableData(tableData.filter((item) => item.key !== deletingKey));
+        refetch(); // Refresh the data after successful deletion
+      } else {
+        message.error(result.message || "Failed to delete announcement");
+      }
+    } catch (err) {
+      console.error("Error deleting announcement:", err);
+      message.error(err?.data?.message || "Something went wrong");
+    }
     setIsDeleteModalOpen(false);
   };
 
-  const toggleStatus = (key) => {
-    const updatedData = tableData.map((item) =>
-      item.key === key
-        ? { ...item, status: item.status === "Active" ? "Inactive" : "Active" }
-        : item
-    );
-    setTableData(updatedData);
+  const toggleStatus = async (key) => {
+    const current = tableData.find((item) => item.key === key);
+    if (!current) return;
+
+    // Get current status from state or fallback to the data
+    const currentStatus = statusMap[key] || current.status;
+    const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+
+    // Optimistically update the UI
+    setStatusMap((prev) => ({ ...prev, [key]: newStatus }));
+
+    const formData = new FormData();
+    formData.append("status", newStatus.toLowerCase()); // Send lowercase to API
+
+    try {
+      const result = await updateAnnouncement({
+        id: key,
+        formData,
+      }).unwrap();
+
+      if (!result.success) {
+        // Revert if API call fails
+        setStatusMap((prev) => ({ ...prev, [key]: currentStatus }));
+        message.error(result.message || "Failed to update status");
+      } else {
+        message.success("Status updated successfully");
+      }
+    } catch (err) {
+      console.error("Error updating status:", err);
+      setStatusMap((prev) => ({ ...prev, [key]: currentStatus }));
+      message.error(err?.data?.message || "Something went wrong");
+    }
   };
 
   const columns = [
@@ -132,16 +181,22 @@ function Announcement() {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status, record) => (
-        <span
-          className={`cursor-pointer font-semibold text-[16px] ${
-            status === "Active" ? "text-green-500" : "text-red-500"
-          }`}
-          onClick={() => toggleStatus(record.key)}
-        >
-          <div className="w-fit border rounded-full px-2 py-.5">{status}</div>
-        </span>
-      ),
+      render: (status, record) => {
+        const displayStatus = statusMap[record.key] || status;
+        const capitalizedStatus = capitalizeFirstLetter(displayStatus);
+        return (
+          <span
+            className={`cursor-pointer font-semibold text-[16px] ${
+              capitalizedStatus === "Active" ? "text-green-500" : "text-red-500"
+            }`}
+            onClick={() => toggleStatus(record.key)}
+          >
+            <div className="w-fit border rounded-full px-2 py-.5">
+              {capitalizedStatus}
+            </div>
+          </span>
+        );
+      },
     },
     {
       title: "Actions",
@@ -154,7 +209,7 @@ function Announcement() {
           />
           <RiDeleteBin6Line
             className="text-black hover:text-red-500 cursor-pointer text-[20px]"
-            onClick={() => handleDelete(record.key)} // Pass MongoDB ObjectId here
+            onClick={() => handleDelete(record.key)}
           />
         </div>
       ),

@@ -1,27 +1,40 @@
-import React, { useState } from "react";
-import { Modal, Form, Input, Button, Flex } from "antd";
+import React, { useState, useEffect } from "react";
+import { Modal, Form, Input, Button, Flex, message } from "antd";
 import { LiaPhoneVolumeSolid } from "react-icons/lia";
 import { PiMapPinAreaLight } from "react-icons/pi";
 import { CiMail } from "react-icons/ci";
 import ButtonEDU from "../../../components/common/ButtonEDU";
-import { useContactQuery } from "../../../redux/apiSlices/contact";
+import {
+  useContactQuery,
+  useUpdateContactMutation,
+} from "../../../redux/apiSlices/contact";
 
 const Contact = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { data: contactInfos, isLoading, isError } = useContactQuery();
-
-  console.log(contactInfos);
+  const [updateContact] = useUpdateContactMutation();
 
   const [contactInfo, setContactInfo] = useState({
-    phone: "(+62) 8896-2220 | (021) 111 444 90",
-    email: "demo@gmail.com",
-    location: "Jl. Merdeka Raya No.73B, Kuta, Badung, Bali",
+    phone: "",
+    email: "",
+    location: "",
   });
 
   const [editedContact, setEditedContact] = useState({ ...contactInfo });
 
+  // Initialize contact info when data is loaded
+  useEffect(() => {
+    if (contactInfos?.data) {
+      setContactInfo({
+        phone: contactInfos.data.phone || "",
+        email: contactInfos.data.email || "",
+        location: contactInfos.data.location || "",
+      });
+    }
+  }, [contactInfos]);
+
   const showModal = () => {
-    setEditedContact({ ...contactInfo }); // Reset edits to original contact info
+    setEditedContact({ ...contactInfo });
     setIsModalOpen(true);
   };
 
@@ -29,26 +42,28 @@ const Contact = () => {
     setIsModalOpen(false);
   };
 
-  const handleUpdate = () => {
-    // Trim everything after the domain part (e.g., ".com", ".org")
-    const trimmedEmail = editedContact.email.replace(
-      /(\.com|\.org|\.net|\.edu)(.*)$/,
-      "$1"
-    );
+  const handleUpdate = async () => {
+    try {
+      // Call the update mutation
+      const result = await updateContact(editedContact).unwrap();
 
-    // Update the contact info with the trimmed email
-    setContactInfo({ ...editedContact, email: trimmedEmail }); // Update the main contact info
-    setIsModalOpen(false);
+      // Update local state if API call is successful
+      setContactInfo({ ...editedContact });
+
+      // Show success message
+      message.success("Contact information updated successfully");
+
+      // Close the modal
+      setIsModalOpen(false);
+    } catch (error) {
+      // Show error message
+      message.error("Failed to update contact information");
+      console.error("Update failed:", error);
+    }
   };
 
   const handleChange = (key, value) => {
     setEditedContact((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const validateEmail = (email) => {
-    // Basic email validation regex
-    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return regex.test(email);
   };
 
   const contactFields = [
@@ -56,6 +71,9 @@ const Contact = () => {
     { key: "email", label: "Email", type: "text" },
     { key: "location", label: "Location", type: "text" },
   ];
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading contact information</div>;
 
   return (
     <div className="py-5">
@@ -98,7 +116,7 @@ const Contact = () => {
         </div>
         <button
           onClick={showModal}
-          className="w-4/5 h-12 bg-white rounded-lg border border-1 border-smart text-smart font-bold tracking-wider hover:bg-smart hover:text-white hover:transition-all duration-500"
+          className="w-4/5 h-12 bg-white rounded-lg border border-1 border-smart text-smart font-bold tracking-wider hover:bg-smart hover:text-white  "
         >
           Edit Info
         </button>

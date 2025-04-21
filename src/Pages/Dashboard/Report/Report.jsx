@@ -1,13 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, DatePicker, Input } from "antd";
+import {
+  Table,
+  Button,
+  DatePicker,
+  Input,
+  Tooltip,
+  message,
+  Modal,
+  Form,
+} from "antd";
 import { FaSortAmountDown } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { IoEye } from "react-icons/io5";
 import DetailsModal from "./DetailsModal";
-import { useGetReportQuery } from "../../../redux/apiSlices/reportApi";
+import {
+  useGetReportQuery,
+  useGiveWarningMutation,
+} from "../../../redux/apiSlices/reportApi";
+import { PiFlagBannerFill } from "react-icons/pi";
 
 function Report() {
-  const { data: getReport, isError, isLoading } = useGetReportQuery();
+  const { data: getReport, isError, isLoading, refetch } = useGetReportQuery();
+  const [warnUser] = useGiveWarningMutation();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [userData, setUserData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -15,18 +29,25 @@ function Report() {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [isSortedAsc, setIsSortedAsc] = useState(true);
   const [searchText, setSearchText] = useState("");
+  const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
+  const [currentReportId, setCurrentReportId] = useState(null);
+  const [warningMessage, setWarningMessage] = useState("");
+  const [form] = Form.useForm();
 
   useEffect(() => {
     if (getReport?.data?.result) {
-      const transformed = getReport.data.result.map((report, index) => ({
-        key: index,
-        reportID: report.reporterId,
-        postID: report.postId,
-        postTitle: report.postTitle || "N/A", // fallback if missing
-        author: report.author || "N/A",
-        reportedBy: report.reportedBy || "N/A",
+      const transformed = getReport?.data?.result?.map((report, index) => ({
+        key: report._id,
+        reportID: report._id,
+        postID: report.postId._id,
+        postTitle: report.postId?.title || "N/A",
+        author: report.postId?.author?.userName || "N/A",
+        authorId: report.postId?.author?._id || null, // Added authorId for warning
+        reportedBy: report.reporterId?.userName || "N/A",
         status: report.status,
         date: report.createdAt,
+        reason: report.reason,
+        description: report.description,
       }));
       setUserData(transformed);
       setFilteredData(transformed);
@@ -58,7 +79,6 @@ function Report() {
       const dateB = new Date(b.date);
       return isSortedAsc ? dateA - dateB : dateB - dateA;
     });
-
     setFilteredData(sortedData);
     setIsSortedAsc(!isSortedAsc);
   };
@@ -79,6 +99,38 @@ function Report() {
     const updatedData = userData.filter((user) => user.key !== key);
     setUserData(updatedData);
     setFilteredData(updatedData);
+  };
+
+  const showWarningModal = (record) => {
+    setCurrentReportId(record.key);
+    setWarningMessage(
+      `Your post "${record.postTitle}" has been reported for violating our community guidelines.`
+    );
+    setIsWarningModalOpen(true);
+  };
+
+  const handleWarning = async () => {
+    try {
+      if (!currentReportId) return;
+
+      const response = await warnUser({
+        id: currentReportId,
+        message: { message: warningMessage },
+      }).unwrap();
+
+      if (response.success) {
+        message.success("User has been warned successfully");
+        refetch(); // Refresh the report data
+      } else {
+        message.error(response.message || "Failed to warn user");
+      }
+    } catch (error) {
+      console.error("Warning error:", error);
+      message.error("An error occurred while warning the user");
+    } finally {
+      setIsWarningModalOpen(false);
+      form.resetFields();
+    }
   };
 
   return (
@@ -115,7 +167,7 @@ function Report() {
 
       <Table
         rowSelection={rowSelection}
-        columns={columns(handleViewDetails, handleDeleteRow)}
+        columns={columns(handleViewDetails, handleDeleteRow, showWarningModal)}
         dataSource={filteredData}
         size="middle"
         loading={isLoading}
@@ -136,13 +188,51 @@ function Report() {
           record={selectedRecord}
         />
       )}
+
+      {/* Warning Modal */}
+      <Modal
+        title="Send Warning to User"
+        open={isWarningModalOpen}
+        onCancel={() => setIsWarningModalOpen(false)}
+        footer={[
+          <Button key="back" onClick={() => setIsWarningModalOpen(false)}>
+            Cancel
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            onClick={handleWarning}
+            className="bg-smart text-white border-none"
+          >
+            Send Warning
+          </Button>,
+        ]}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Warning Message"
+            name="warningMessage"
+            initialValue={warningMessage}
+            rules={[
+              { required: true, message: "Please enter a warning message" },
+            ]}
+          >
+            <Input.TextArea
+              rows={4}
+              value={warningMessage}
+              onChange={(e) => setWarningMessage(e.target.value)}
+              placeholder="Enter warning message for the user..."
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 }
 
 export default Report;
 
-const columns = (handleViewDetails, handleDeleteRow) => [
+const columns = (handleViewDetails, handleDeleteRow, showWarningModal) => [
   {
     title: "Report ID",
     dataIndex: "reportID",
@@ -175,7 +265,7 @@ const columns = (handleViewDetails, handleDeleteRow) => [
     render: (_, record) => (
       <span
         className={`font-medium text-${
-          record.status === "Resolve" ? "green-500" : "red-500"
+          record.status === "reviewed" ? "green-500" : "red-500"
         }`}
       >
         {record.status}
@@ -189,19 +279,33 @@ const columns = (handleViewDetails, handleDeleteRow) => [
     render: (text) => new Date(text).toLocaleDateString(),
   },
   {
+    title: "Action",
     key: "action",
     render: (text, record) => (
       <div className="flex items-center gap-3">
-        <IoEye
-          size={25}
-          className="hover:text-sky-500 cursor-pointer"
-          onClick={() => handleViewDetails(record)}
-        />
-        <RiDeleteBin6Line
-          size={20}
-          className="hover:text-red-500 cursor-pointer"
-          onClick={() => handleDeleteRow(record.key)}
-        />
+        <Tooltip placement="top" title={"View Details"}>
+          <IoEye
+            size={25}
+            className="hover:text-smart cursor-pointer"
+            onClick={() => handleViewDetails(record)}
+          />
+        </Tooltip>
+
+        <Tooltip placement="top" title={"Delete Post"}>
+          <RiDeleteBin6Line
+            size={20}
+            className="hover:text-red-500 cursor-pointer"
+            onClick={() => handleDeleteRow(record.key)}
+          />
+        </Tooltip>
+
+        <Tooltip placement="top" title={"Warn User"}>
+          <PiFlagBannerFill
+            size={20}
+            className="hover:text-red-500 cursor-pointer"
+            onClick={() => showWarningModal(record)}
+          />
+        </Tooltip>
       </div>
     ),
   },

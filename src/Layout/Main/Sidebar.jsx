@@ -43,15 +43,15 @@ const Sidebar = ({ isCollapsed }) => {
         <Link to="/user-list">User</Link>
       ),
     },
-    {
-      key: "/post-list",
-      icon: <BsFilePost size={23} />,
-      label: isCollapsed ? (
-        <Link to="/post-list">Post</Link>
-      ) : (
-        <Link to="/post-list">Post</Link>
-      ),
-    },
+    // {
+    //   key: "/post-list",
+    //   icon: <BsFilePost size={23} />,
+    //   label: isCollapsed ? (
+    //     <Link to="/post-list">Post</Link>
+    //   ) : (
+    //     <Link to="/post-list">Post</Link>
+    //   ),
+    // },
     {
       key: "/category-subcategory-management",
       icon: <MdCategory size={25} />,

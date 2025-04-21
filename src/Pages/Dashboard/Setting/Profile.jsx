@@ -1,24 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import man from "../../../assets/man.png";
-import { FaFeather } from "react-icons/fa6";
 import { Button, ConfigProvider, Form, Input, Upload, message } from "antd";
 import { HiMiniPencil } from "react-icons/hi2";
-
-import { imageUrl } from "../../../redux/api/baseApi";
-
-import { useUser } from "../../../provider/User";
 import { MdCameraEnhance } from "react-icons/md";
+import {
+  useGetProfileQuery,
+  useUpdateAdminProfileMutation,
+} from "../../../redux/apiSlices/profileApi";
+import { getImageUrl } from "../../../components/common/ImageUrl";
 
 function Profile() {
   const [showButton, setShowButton] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
-  const user = useUser() || {
-    name: "John Doe",
-    email: "johndoe@example.com",
-    phoneNumber: "+1234567890",
-    role: "Admin",
-    image: null,
-  };
+  const { data: getProfile, isError, isLoading } = useGetProfileQuery();
+  const [updateProfile] = useUpdateAdminProfileMutation();
+
+  const user = getProfile?.data;
+
+  if (!user) {
+    return (
+      <div className="text-center p-4 text-gray-600">Loading profile...</div>
+    );
+  }
 
   return (
     <div className="bg-quilocoP w-full min-h-72 flex flex-col justify-start items-center px-4 border bg-white rounded-lg">
@@ -27,8 +30,8 @@ function Profile() {
           src={
             uploadedImage
               ? URL.createObjectURL(uploadedImage)
-              : user?.image
-              ? `${imageUrl}${user.image}`
+              : getImageUrl(user?.profile)
+              ? getImageUrl(user?.profile)
               : man
           }
           width={120}
@@ -56,7 +59,7 @@ function Profile() {
             </button>
           </Upload>
         )}
-        <h3 className="text-slate-50 text-xl mt-3">{user.name}</h3>
+        <h3 className="text-black text-xl mt-3">{user?.name || "Unnamed"}</h3>
       </div>
       <div className="w-full flex justify-end">
         <Button
@@ -79,6 +82,7 @@ function Profile() {
         setShowButton={setShowButton}
         user={user}
         uploadedImage={uploadedImage}
+        updateProfile={updateProfile}
       />
     </div>
   );
@@ -86,40 +90,42 @@ function Profile() {
 
 export default Profile;
 
-const ProfileDetails = ({ showButton, setShowButton, user, uploadedImage }) => {
+const ProfileDetails = ({
+  showButton,
+  setShowButton,
+  user,
+  uploadedImage,
+  updateProfile,
+}) => {
   const [form] = Form.useForm();
-  const { updateUser } = useUser();
 
-  React.useEffect(() => {
-    form.setFieldsValue({
-      name: user.name || "John Doe",
-      email: user.email || "johndoe@example.com",
-      phone: user.phoneNumber || "+1234567890",
-      role: user.role || "Admin",
-    });
+  useEffect(() => {
+    if (user) {
+      form.setFieldsValue({
+        name: user?.name || "John Doe",
+        email: user?.email || "johndoe@example.com",
+        phone: user?.contact || "+1234567890",
+        role: user?.role || "Admin",
+      });
+    }
   }, [user, form]);
 
   const handleFinish = async (values) => {
     try {
       const formData = new FormData();
+
       if (uploadedImage) {
         formData.append("image", uploadedImage);
       }
 
-      const data = {
-        name: values.name,
-        phoneNumber: values.phone,
-      };
-
-      formData.append("data", JSON.stringify(data));
+      formData.append("name", values.name);
+      formData.append("contact", values.phone);
 
       const response = await updateProfile(formData).unwrap();
       if (response.success) {
         message.success("Profile updated successfully!");
+        console.log(response);
         setShowButton(false);
-        if (updateUser && response.data) {
-          updateUser(response.data);
-        }
       }
     } catch (error) {
       message.error(error?.data?.message || "Failed to update profile.");

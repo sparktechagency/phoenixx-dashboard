@@ -1,78 +1,132 @@
 import React from "react";
-import { Modal } from "antd";
-import evidience from "../../../assets/evidience.jpg"; // Image path
+import { Modal, Divider, Tag } from "antd";
+import {
+  UserOutlined,
+  IdcardOutlined,
+  FileTextOutlined,
+  FlagOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 
 function DetailsModal({ isModalOpen, setIsModalOpen, record }) {
-  // Check if the record data is available
-  if (!record) {
-    return null; // Don't render anything if record is not provided
-  }
+  if (!record) return null;
+
+  // Status tag color mapping
+  const statusColors = {
+    pending: "orange",
+    resolved: "green",
+    rejected: "red",
+    reviewed: "blue",
+  };
 
   return (
     <Modal
       centered
       width={700}
-      title="Report Details"
-      visible={isModalOpen}
-      footer={null}
-      onCancel={() => setIsModalOpen(false)} // Close modal on cancel
-    >
-      <div>
-        <p>
-          <strong>Report ID:</strong> {record.reportID || "N/A"}
-        </p>
-        <p>
-          <strong>Post ID:</strong> {record.postID || "N/A"}
-        </p>
-        <p>
-          <strong>Post Title:</strong> {record.postTitle || "N/A"}
-        </p>
-        <p>
-          <strong>Author:</strong> {record.author || "N/A"}
-        </p>
-        <p>
-          <strong>Reported By:</strong> {record.reportedBy || "N/A"}
-        </p>
-        <p>
-          <strong>Status:</strong> {record.status || "N/A"}
-        </p>
-      </div>
-
-      <div className="mt-3">
-        <p className="mb-2">
-          <strong>Description:</strong>
-        </p>
-        <div className="border rounded-md p-3">
-          {/* <p>{record.description || }</p> */}
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur
-            impedit voluptatum mollitia provident! Illum aperiam mollitia eum a
-            alias consequuntur enim voluptatibus quidem distinctio repellendus
-            dicta consequatur inventore ratione neque, iusto officia quam! Harum
-            molestiae sequi minus fugit, officia quo. Aperiam hic consequatur,
-            distinctio dicta eos provident at, excepturi pariatur nam adipisci
-            fugit voluptate perspiciatis tempora tempore debitis obcaecati?
-            Deserunt sequi minima exercitationem? Tempora eos id dolores magni
-            modi quaerat doloribus iure dicta, accusantium quia vitae,
-            voluptatum soluta molestiae totam.
-          </p>
+      title={
+        <div className="flex items-center gap-2">
+          <FlagOutlined className="text-red-500" />
+          <span>Report Details</span>
         </div>
-      </div>
+      }
+      open={isModalOpen}
+      footer={null}
+      onCancel={() => setIsModalOpen(false)}
+      className="report-details-modal"
+    >
+      <div className="space-y-6">
+        {/* Header Info */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <div className="flex items-center gap-2 text-gray-600 mb-1">
+              <IdcardOutlined />
+              <span className="text-sm font-medium">Report ID</span>
+            </div>
+            <p className="text-lg font-semibold">{record.reportID || "N/A"}</p>
+          </div>
 
-      <div className="mt-3">
-        <p className="mb-2">
-          <strong>Evidence:</strong>
-        </p>
-        <div className="border rounded-md flex items-center justify-between flex-wrap">
-          {[...Array(5)].map((_, index) => (
-            <img
-              key={index} // Ensure each item has a unique key
-              className="border h-32 rounded-md"
-              width={120} // Size for the image
-              src={evidience} // Image path
-              alt={`Image ${index + 1}`} // Alt text for accessibility
-            />
-          ))}
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <div className="flex items-center gap-2 text-gray-600 mb-1">
+              <IdcardOutlined />
+              <span className="text-sm font-medium">Post ID</span>
+            </div>
+            <p className="text-lg font-semibold">{record.postID || "N/A"}</p>
+          </div>
+        </div>
+
+        {/* Basic Info */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <div className="flex items-center gap-2 text-gray-600 mb-1">
+              <FileTextOutlined />
+              <span className="text-sm font-medium">Post Title</span>
+            </div>
+            <p className="text-lg font-semibold line-clamp-1">
+              {record.postTitle || "N/A"}
+            </p>
+          </div>
+
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <div className="flex items-center gap-2 text-gray-600 mb-1">
+              <UserOutlined />
+              <span className="text-sm font-medium">Author</span>
+            </div>
+            <p className="text-lg font-semibold">{record.author || "N/A"}</p>
+          </div>
+        </div>
+
+        {/* Reporter Info */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <div className="flex items-center gap-2 text-gray-600 mb-1">
+              <UserOutlined />
+              <span className="text-sm font-medium">Reported By</span>
+            </div>
+            <p className="text-lg font-semibold">
+              {record.reportedBy || "N/A"}
+            </p>
+          </div>
+
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <div className="flex items-center gap-2 text-gray-600 mb-1">
+              <InfoCircleOutlined />
+              <span className="text-sm font-medium">Status</span>
+            </div>
+            <Tag
+              color={statusColors[record.status?.toLowerCase()] || "default"}
+              className="text-sm font-medium capitalize"
+            >
+              {record.status || "N/A"}
+            </Tag>
+          </div>
+        </div>
+
+        <Divider className="my-2" />
+
+        {/* Reason Section */}
+        <div>
+          <h3 className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+            <FileTextOutlined />
+            <span>Reason for Report</span>
+          </h3>
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <p className="text-gray-800">
+              {record.reason || "No reason provided"}
+            </p>
+          </div>
+        </div>
+
+        {/* Description Section */}
+        <div>
+          <h3 className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+            <InfoCircleOutlined />
+            <span>Additional Description</span>
+          </h3>
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <p className="text-gray-800">
+              {record.description || "No additional description provided"}
+            </p>
+          </div>
         </div>
       </div>
     </Modal>
