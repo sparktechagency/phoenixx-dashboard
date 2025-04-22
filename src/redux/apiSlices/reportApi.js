@@ -22,9 +22,9 @@ const reportApi = api.injectEndpoints({
       invalidatesTags: ["Report"],
     }),
     getReport: builder.query({
-      query: () => {
+      query: ({ page, limit }) => {
         return {
-          url: "/reports",
+          url: `/reports?page=${page}&limit=${limit}`,
           method: "GET",
         };
       },

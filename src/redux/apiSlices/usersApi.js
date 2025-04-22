@@ -12,9 +12,9 @@ const usersApi = api.injectEndpoints({
     }),
 
     getUsers: builder.query({
-      query: () => {
+      query: (page) => {
         return {
-          url: "/users/get-all-users",
+          url: `/users/get-all-users?page=${page}`,
           method: "GET",
         };
       },
