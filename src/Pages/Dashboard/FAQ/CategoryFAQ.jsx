@@ -269,77 +269,79 @@ const CategoryFAQ = () => {
       ) : categories.length === 0 ? (
         <Empty description="No categories found" />
       ) : (
-        <Collapse accordion onChange={handlePanelChange}>
-          {categories.map((category) => (
-            <Panel
-              header={
-                <div className="flex justify-between items-center">
-                  <span>{category.name}</span>
-                  <div
-                    className="flex gap-2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button
-                      className="w-6 h-6 text-smart"
-                      icon={<FiEdit3 />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditModal(category, "category");
-                      }}
-                    />
-                    <Button
-                      className="w-6 h-6 text-[#ff4e50]"
-                      icon={<ImBin />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openDeleteModal(category, "category");
-                      }}
-                    />
-                  </div>
-                </div>
-              }
-              key={category.id}
-            >
-              {selectedCategoryId === category.id && faqsLoading ? (
-                <div>Loading FAQs...</div>
-              ) : faqs.filter((faq) => faq.categoryId === category.id)
-                  .length === 0 ? (
-                <Empty description="No FAQs in this category" />
-              ) : (
-                faqs
-                  .filter((faq) => faq.categoryId === category.id)
-                  .map((faq) => (
-                    <Card
-                      key={faq.id}
-                      title={
-                        <p className="text-black font-bold">
-                          Q: {faq.question}
-                        </p>
-                      }
-                      extra={
-                        <div className="flex gap-2">
-                          <Button
-                            className="w-5 h-6 text-smart"
-                            icon={<FiEdit3 />}
-                            onClick={() => openEditModal(faq, "faq")}
-                          />
-                          <Button
-                            className="w-5 h-6 text-[#ff4e50]"
-                            icon={<ImBin />}
-                            onClick={() => openDeleteModal(faq, "faq")}
-                          />
-                        </div>
-                      }
-                      className="mb-4"
+        <div className="h-[34rem] overflow-auto">
+          <Collapse accordion onChange={handlePanelChange}>
+            {categories.map((category) => (
+              <Panel
+                header={
+                  <div className="flex justify-between items-center">
+                    <span>{category.name}</span>
+                    <div
+                      className="flex gap-2"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <span className="text-black font-bold">A:</span>{" "}
-                      {faq.answer}
-                    </Card>
-                  ))
-              )}
-            </Panel>
-          ))}
-        </Collapse>
+                      <Button
+                        className="w-6 h-6 text-smart"
+                        icon={<FiEdit3 />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditModal(category, "category");
+                        }}
+                      />
+                      <Button
+                        className="w-6 h-6 text-[#ff4e50]"
+                        icon={<ImBin />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDeleteModal(category, "category");
+                        }}
+                      />
+                    </div>
+                  </div>
+                }
+                key={category.id}
+              >
+                {selectedCategoryId === category.id && faqsLoading ? (
+                  <div>Loading FAQs...</div>
+                ) : faqs.filter((faq) => faq.categoryId === category.id)
+                    .length === 0 ? (
+                  <Empty description="No FAQs in this category" />
+                ) : (
+                  faqs
+                    .filter((faq) => faq.categoryId === category.id)
+                    .map((faq) => (
+                      <Card
+                        key={faq.id}
+                        title={
+                          <p className="text-black font-bold">
+                            Q: {faq.question}
+                          </p>
+                        }
+                        extra={
+                          <div className="flex gap-2">
+                            <Button
+                              className="w-5 h-6 text-smart"
+                              icon={<FiEdit3 />}
+                              onClick={() => openEditModal(faq, "faq")}
+                            />
+                            <Button
+                              className="w-5 h-6 text-[#ff4e50]"
+                              icon={<ImBin />}
+                              onClick={() => openDeleteModal(faq, "faq")}
+                            />
+                          </div>
+                        }
+                        className="mb-4"
+                      >
+                        <span className="text-black font-bold">A:</span>{" "}
+                        {faq.answer}
+                      </Card>
+                    ))
+                )}
+              </Panel>
+            ))}
+          </Collapse>
+        </div>
       )}
 
       {/* Modals */}

@@ -14,14 +14,103 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { IoEye } from "react-icons/io5";
 import DetailsModal from "./DetailsModal";
 import {
+  useDeleteReportedPostMutation,
   useGetReportQuery,
   useGiveWarningMutation,
 } from "../../../redux/apiSlices/reportApi";
 import { PiFlagBannerFill } from "react-icons/pi";
 
+const columns = (handleViewDetails, handleDeleteRow, showWarningModal) => [
+  {
+    title: "Report ID",
+    dataIndex: "reportID",
+    key: "reportID",
+  },
+  {
+    title: "Post ID",
+    dataIndex: "postID",
+    key: "postID",
+  },
+  {
+    title: "Post Title",
+    dataIndex: "postTitle",
+    key: "postTitle",
+  },
+  {
+    title: "Author",
+    dataIndex: "author",
+    key: "author",
+  },
+  {
+    title: "Reported By",
+    dataIndex: "reportedBy",
+    key: "reportedBy",
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
+    key: "status",
+    render: (_, record) => (
+      <span
+        className={`font-medium text-${
+          record.status === "reviewed" ? "green-500" : "red-500"
+        }`}
+      >
+        {record.status}
+      </span>
+    ),
+  },
+  {
+    title: "Date",
+    dataIndex: "date",
+    key: "date",
+    render: (text) => new Date(text).toLocaleDateString(),
+  },
+  {
+    title: "Action",
+    key: "action",
+    render: (text, record) => (
+      <div className="flex items-center gap-3">
+        <Tooltip placement="top" title={"View Details"}>
+          <IoEye
+            size={25}
+            className="hover:text-smart cursor-pointer"
+            onClick={() => handleViewDetails(record)}
+          />
+        </Tooltip>
+
+        <Tooltip placement="top" title={"Delete Post"}>
+          <RiDeleteBin6Line
+            size={20}
+            className={`hover:text-red-500 cursor-pointer ${
+              record.status === "resolved"
+                ? "pointer-events-none opacity-50"
+                : ""
+            }`}
+            onClick={() => handleDeleteRow(record.key)}
+          />
+        </Tooltip>
+
+        <Tooltip placement="top" title={"Warn User"}>
+          <PiFlagBannerFill
+            size={20}
+            className={`hover:text-red-500 cursor-pointer ${
+              record.status === "reviewed"
+                ? "pointer-events-none opacity-50"
+                : ""
+            }`}
+            onClick={() => showWarningModal(record)}
+          />
+        </Tooltip>
+      </div>
+    ),
+  },
+];
+
 function Report() {
   const { data: getReport, isError, isLoading, refetch } = useGetReportQuery();
   const [warnUser] = useGiveWarningMutation();
+  const [deletePost] = useDeleteReportedPostMutation();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [userData, setUserData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -36,13 +125,13 @@ function Report() {
 
   useEffect(() => {
     if (getReport?.data?.result) {
-      const transformed = getReport?.data?.result?.map((report, index) => ({
+      const transformed = getReport.data.result.map((report) => ({
         key: report._id,
         reportID: report._id,
-        postID: report.postId._id,
+        postID: report.postId?._id,
         postTitle: report.postId?.title || "N/A",
         author: report.postId?.author?.userName || "N/A",
-        authorId: report.postId?.author?._id || null, // Added authorId for warning
+        authorId: report.postId?.author?._id || null,
         reportedBy: report.reporterId?.userName || "N/A",
         status: report.status,
         date: report.createdAt,
@@ -95,17 +184,28 @@ function Report() {
     setFilteredData(filtered);
   };
 
-  const handleDeleteRow = (key) => {
-    const updatedData = userData.filter((user) => user.key !== key);
-    setUserData(updatedData);
-    setFilteredData(updatedData);
+  const handleDeleteRow = async (key) => {
+    try {
+      const res = await deletePost(key).unwrap();
+      if (res.success) {
+        message.success("Post Successfully Removed from Website");
+        const updatedData = userData.filter((user) => user.key !== key);
+        setUserData(updatedData);
+        setFilteredData(updatedData);
+      } else {
+        message.error("Failed to Delete Post");
+      }
+    } catch (err) {
+      console.log(err);
+      message.error("An error occurred while deleting the post");
+    }
   };
 
   const showWarningModal = (record) => {
     setCurrentReportId(record.key);
-    setWarningMessage(
-      `Your post "${record.postTitle}" has been reported for violating our community guidelines.`
-    );
+    const msg = `Your post "${record.postTitle}" has been reported for violating our community guidelines.`;
+    setWarningMessage(msg);
+    form.setFieldsValue({ warningMessage: msg });
     setIsWarningModalOpen(true);
   };
 
@@ -120,7 +220,7 @@ function Report() {
 
       if (response.success) {
         message.success("User has been warned successfully");
-        refetch(); // Refresh the report data
+        refetch();
       } else {
         message.error(response.message || "Failed to warn user");
       }
@@ -189,7 +289,6 @@ function Report() {
         />
       )}
 
-      {/* Warning Modal */}
       <Modal
         title="Send Warning to User"
         open={isWarningModalOpen}
@@ -212,7 +311,6 @@ function Report() {
           <Form.Item
             label="Warning Message"
             name="warningMessage"
-            initialValue={warningMessage}
             rules={[
               { required: true, message: "Please enter a warning message" },
             ]}
@@ -231,82 +329,3 @@ function Report() {
 }
 
 export default Report;
-
-const columns = (handleViewDetails, handleDeleteRow, showWarningModal) => [
-  {
-    title: "Report ID",
-    dataIndex: "reportID",
-    key: "reportID",
-  },
-  {
-    title: "Post ID",
-    dataIndex: "postID",
-    key: "postID",
-  },
-  {
-    title: "Post Title",
-    dataIndex: "postTitle",
-    key: "postTitle",
-  },
-  {
-    title: "Author",
-    dataIndex: "author",
-    key: "author",
-  },
-  {
-    title: "Reported By",
-    dataIndex: "reportedBy",
-    key: "reportedBy",
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "status",
-    render: (_, record) => (
-      <span
-        className={`font-medium text-${
-          record.status === "reviewed" ? "green-500" : "red-500"
-        }`}
-      >
-        {record.status}
-      </span>
-    ),
-  },
-  {
-    title: "Date",
-    dataIndex: "date",
-    key: "date",
-    render: (text) => new Date(text).toLocaleDateString(),
-  },
-  {
-    title: "Action",
-    key: "action",
-    render: (text, record) => (
-      <div className="flex items-center gap-3">
-        <Tooltip placement="top" title={"View Details"}>
-          <IoEye
-            size={25}
-            className="hover:text-smart cursor-pointer"
-            onClick={() => handleViewDetails(record)}
-          />
-        </Tooltip>
-
-        <Tooltip placement="top" title={"Delete Post"}>
-          <RiDeleteBin6Line
-            size={20}
-            className="hover:text-red-500 cursor-pointer"
-            onClick={() => handleDeleteRow(record.key)}
-          />
-        </Tooltip>
-
-        <Tooltip placement="top" title={"Warn User"}>
-          <PiFlagBannerFill
-            size={20}
-            className="hover:text-red-500 cursor-pointer"
-            onClick={() => showWarningModal(record)}
-          />
-        </Tooltip>
-      </div>
-    ),
-  },
-];

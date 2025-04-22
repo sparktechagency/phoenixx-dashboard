@@ -45,7 +45,7 @@ function CategoryList() {
   const treeData = buildTreeData(categories, subCategories);
 
   return (
-    <div className="w-1/2">
+    <div className="w-1/2 mx-auto">
       <Tree
         showLine
         switcherIcon={<DownOutlined />}

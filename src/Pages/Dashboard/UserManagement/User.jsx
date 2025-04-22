@@ -1,70 +1,72 @@
 import React, { useState } from "react";
-import { Table, Avatar, ConfigProvider, Input, Button, message } from "antd";
-import { SearchOutlined, DeleteOutlined } from "@ant-design/icons";
+import { motion } from "framer-motion";
+import { Table, Avatar, Input, Button, message, Tooltip } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import GetPageName from "../../../components/common/GetPageName";
-import PopOver from "../../../components/common/PopOver";
 import { LuDownload } from "react-icons/lu";
 import UserEditModal from "./UserEditModal";
-import man from "../../../assets/man.png";
+import { FaBan, FaCheck } from "react-icons/fa";
+import { TbLockSquareRoundedFilled } from "react-icons/tb";
+import { useGetUsersQuery } from "../../../redux/apiSlices/UsersApi";
+import { getImageUrl } from "../../../components/common/ImageUrl";
 
 function User() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [userData, setUserData] = useState(data);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [page] = useState(1);
+  const { data: getUsers, isLoading } = useGetUsersQuery(page);
+  const [localUsers, setLocalUsers] = useState([]);
+
+  // Initialize localUsers when data is fetched
+  React.useEffect(() => {
+    if (getUsers?.data?.data) {
+      setLocalUsers(
+        getUsers.data.data.map((user, index) => ({
+          key: index,
+          userID: user?._id,
+          userName: user?.userName,
+          email: user?.email,
+          totalPost: user?.postCount,
+          status: user?.status,
+          avatar: getImageUrl(user?.profile),
+          joinDate: user?.createdAt,
+          blocked: user?.blocked || false,
+        }))
+      );
+    }
+  }, [getUsers]);
 
   const handleSearch = (value) => {
     setSearchQuery(value);
   };
 
-  const filteredData = userData.filter(
+  const filteredData = localUsers.filter(
     (user) =>
-      user.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.phoneNumber.includes(searchQuery) ||
-      user.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.spent.toLowerCase().includes(searchQuery.toLowerCase())
+      user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: setSelectedRowKeys,
-  };
-
-  // Handle edit button click
   const handleEdit = (record) => {
-    setSelectedProvider(record); // Store selected provider's data
-    setIsModalOpen(true); // Open modal
+    setSelectedUser(record);
+    setIsModalOpen(true);
   };
 
-  // Handle ban functionality
-  const handleBan = (provider) => {
-    setUserData((prevData) =>
-      prevData.map((user) =>
-        user.key === provider.key ? { ...user, banned: !user.banned } : user
+  const toggleBlock = (user) => {
+    setLocalUsers((prevUsers) =>
+      prevUsers.map((u) =>
+        u.key === user.key ? { ...u, blocked: !u.blocked } : u
       )
     );
     message.success(
-      `${provider.customerName} has been ${
-        provider.banned ? "unbanned" : "banned"
-      }`
+      `${user.userName} has been ${user.blocked ? "unblocked" : "blocked"}`
     );
+    // Here you would typically make an API call to update the blocked status
+    // await updateUserBlockStatus(user.userID, !user.blocked);
   };
 
-  // Handle saving edited provider
-  const handleSave = (updatedProvider) => {
-    setUserData((prevData) =>
-      prevData.map((user) =>
-        user.key === updatedProvider.key ? updatedProvider : user
-      )
-    );
+  const handleSave = (updatedUser) => {
     setIsModalOpen(false);
-  };
-
-  const handleDeleteSelected = () => {
-    setUserData(userData.filter((user) => !selectedRowKeys.includes(user.key)));
-    setSelectedRowKeys([]);
   };
 
   return (
@@ -73,24 +75,14 @@ function User() {
         <h1 className="text-[20px] font-medium">{GetPageName()}</h1>
         <div className="flex gap-3">
           <Input
-            placeholder="Search by Name, Email or Phone"
+            placeholder="Search by Name or Email"
             onChange={(e) => handleSearch(e.target.value)}
             prefix={<SearchOutlined />}
             className="h-[47px] gap-2 border"
             allowClear
           />
-          {selectedRowKeys.length > 0 && (
-            <Button
-              icon={<DeleteOutlined />}
-              onClick={handleDeleteSelected}
-              className="bg-smart hover:bg-smart text-white border-none h-9"
-            >
-              Delete Selected
-            </Button>
-          )}
           <Button
             icon={<LuDownload size={20} />}
-            onClick={handleDeleteSelected}
             className="bg-smart hover:bg-smart text-white border-none h-9"
           >
             Export
@@ -99,11 +91,12 @@ function User() {
       </div>
 
       <Table
-        rowSelection={rowSelection}
-        columns={columns(handleEdit, handleBan)} // Pass handleEdit and handleBan to columns
+        columns={columns(handleEdit, toggleBlock)}
         dataSource={filteredData}
+        loading={isLoading}
         rowClassName={() => "text-black"}
         size="middle"
+        scroll={{ x: true }}
         pagination={{
           defaultPageSize: 5,
           position: ["bottomRight"],
@@ -113,11 +106,11 @@ function User() {
           showQuickJumper: false,
         }}
       />
-      {/* Edit Modal */}
+
       <UserEditModal
         isModalOpen={isModalOpen}
         handleCancel={() => setIsModalOpen(false)}
-        providerData={selectedProvider}
+        userData={selectedUser}
         onSave={handleSave}
       />
     </>
@@ -126,106 +119,85 @@ function User() {
 
 export default User;
 
-const columns = (handleEdit, handleBan) => [
+const columns = (handleEdit, toggleBlock) => [
   {
     title: "User ID",
     dataIndex: "userID",
     key: "userID",
+    width: "16.66%",
+    ellipsis: true,
   },
   {
     title: "User Name",
-    dataIndex: "customerName",
-    key: "customerName",
+    dataIndex: "userName",
+    key: "userName",
+    width: "16.66%",
     render: (text, record) => (
       <div className="flex items-center gap-2.5 text-black">
         <div className="border rounded-full">
           <Avatar src={record.avatar} alt={text} shape="circle" size={40} />
         </div>
         <div className="flex flex-col">
-          <span>{text}</span>
-          <span>{record.email}</span>
+          <span className="truncate flex items-center gap-2">
+            {text}
+            {record.blocked && (
+              <TbLockSquareRoundedFilled className="text-red-500" size={20} />
+            )}
+          </span>
+          <span className="truncate">{record.email}</span>
         </div>
       </div>
     ),
   },
   {
-    title: "Subscription Type",
-    dataIndex: "subscriptionType",
-    key: "subscriptionType",
-  },
-  {
     title: "Total Post",
     dataIndex: "totalPost",
     key: "totalPost",
+    width: "16.66%",
+    align: "center",
   },
   {
     title: "Join Date",
     dataIndex: "joinDate",
     key: "joinDate",
+    width: "16.66%",
+    ellipsis: true,
   },
   {
     title: "Status",
     dataIndex: "status",
     key: "status",
+    width: "16.66%",
+    align: "center",
+    // render: (status, record) => (
+    //   <span className={record.blocked ? "text-red-500" : ""}>
+    //     {record.blocked ? "Blocked" : status}
+    //   </span>
+    // ),
   },
   {
+    title: "Action",
     key: "action",
     render: (text, record) => (
-      <PopOver
-        onEdit={() => handleEdit(record)}
-        onBan={() => handleBan(record)}
-      />
+      <motion.div
+        initial={{ x: 200, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
+        <Tooltip title={record.blocked ? "Unblock" : "Block"}>
+          {record.blocked ? (
+            <FaCheck
+              className="text-green-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
+              onClick={() => toggleBlock(record)}
+            />
+          ) : (
+            <FaBan
+              className="text-gray-500 hover:text-red-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
+              onClick={() => toggleBlock(record)}
+            />
+          )}
+        </Tooltip>
+      </motion.div>
     ),
-  },
-];
-
-const data = [
-  {
-    key: 1,
-    userID: "US001",
-    customerName: "John Doe",
-    email: "johndoe@gmail.com",
-    subscriptionType: "Premium",
-    totalPost: 12,
-    joinDate: "2023-01-15",
-    status: "Active",
-    avatar: man,
-    banned: false, // Add banned field
-  },
-  {
-    key: 2,
-    userID: "US002",
-    customerName: "Jane Smith",
-    email: "janesmith@gmail.com",
-    subscriptionType: "Basic",
-    totalPost: 20,
-    joinDate: "2023-01-15",
-    status: "Deactive",
-    avatar: man,
-    banned: false, // Add banned field
-  },
-  {
-    key: 3,
-    userID: "US003",
-    customerName: "John Foster",
-    email: "johnfoster@gmail.com",
-    subscriptionType: "Premium",
-    totalPost: 12,
-    joinDate: "2023-01-15",
-    status: "Active",
-    avatar: man,
-    banned: false, // Add banned field
-  },
-  {
-    key: 4,
-    userID: "US004",
-    customerName: "Jane Leaster",
-    email: "janeleaster@gmail.com",
-    subscriptionType: "Free",
-    totalPost: 20,
-    joinDate: "2023-01-15",
-    status: "Active",
-    avatar: man,
-    banned: false, // Add banned field
   },
 ];

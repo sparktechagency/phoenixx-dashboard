@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
   Form,
@@ -10,6 +10,7 @@ import {
   Image,
 } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   useCategoryQuery,
   useUpdateCategoryMutation,
@@ -45,6 +46,8 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
   const [fileList, setFileList] = useState([]);
   const [existingImage, setExistingImage] = useState(null);
   const [selected, setSelected] = useState("Category");
+  const [direction, setDirection] = useState(0);
+  const prevIndexRef = useRef(0);
 
   const [updateCategory] = useUpdateCategoryMutation();
   const [updateSubCategory] = useUpdateSubCategoryMutation();
@@ -62,25 +65,14 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
       skip: !selectedCategory,
     });
 
-  // Log the full subcategory data structure to debug
-  console.log("Full subcategory data:", subCategoryData);
-
   const subCategories = subCategoryData?.data || [];
-  console.log("Parsed subCategories:", subCategories);
-
-  // Fix the subcategory options mapping
-  const subCategoryOptions = subCategories.map((sub) => {
-    console.log("Individual subcategory object:", sub);
-    return {
-      value:
-        sub.id ||
-        sub._id ||
-        (sub.subcategory && (sub.subcategory.id || sub.subcategory._id)),
-      label: sub.name || (sub.subcategory && sub.subcategory.name),
-    };
-  });
-
-  console.log("Modified subcategory options:", subCategoryOptions);
+  const subCategoryOptions = subCategories.map((sub) => ({
+    value:
+      sub.id ||
+      sub._id ||
+      (sub.subcategory && (sub.subcategory.id || sub.subcategory._id)),
+    label: sub.name || (sub.subcategory && sub.subcategory.name),
+  }));
 
   const handleImageChange = ({ fileList }) => {
     setFileList(fileList);
@@ -89,6 +81,30 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
     } else {
       setImageFile(null);
     }
+  };
+
+  // Animation variants
+  const variants = {
+    enter: (direction) => ({
+      x: direction > 0 ? 100 : -100,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 25,
+      },
+    },
+    exit: (direction) => ({
+      x: direction > 0 ? -100 : 100,
+      opacity: 0,
+      transition: {
+        duration: 0.2,
+      },
+    }),
   };
 
   // Fetch and populate category data
@@ -119,9 +135,6 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
       selectedSubCategory &&
       subCategories.length > 0
     ) {
-      console.log("Looking for subcategory with ID:", selectedSubCategory);
-
-      // Find subcategory trying multiple possible structures
       const selectedSubCategoryData = subCategories.find(
         (sub) =>
           sub.id === selectedSubCategory ||
@@ -129,8 +142,6 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
           (sub.subcategory && sub.subcategory.id === selectedSubCategory) ||
           (sub.subcategory && sub.subcategory._id === selectedSubCategory)
       );
-
-      console.log("Found subcategory data:", selectedSubCategoryData);
 
       if (selectedSubCategoryData) {
         const name =
@@ -185,13 +196,6 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
           subCategoryData.append("image", imageFile);
         }
 
-        console.log("Updating subcategory with data:", {
-          id: selectedSubCategory,
-          name: values.subCategoryName,
-          parentCategory: selectedCategory,
-          hasImage: !!imageFile,
-        });
-
         const res = await updateSubCategory({
           id: selectedSubCategory,
           updatedData: subCategoryData,
@@ -213,6 +217,12 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
   };
 
   const handleSelected = (value) => {
+    const segments = ["Category", "Sub Category"];
+    const currentIndex = segments.indexOf(selected);
+    const newIndex = segments.indexOf(value);
+    setDirection(newIndex > currentIndex ? 1 : -1);
+    prevIndexRef.current = currentIndex;
+
     setSelected(value);
     form.resetFields();
     setSelectedCategory(null);
@@ -222,10 +232,7 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
   };
 
   const handleCategoryChange = (value) => {
-    console.log("Category changed to:", value);
     setSelectedCategory(value);
-
-    // Reset subcategory when category changes
     if (selected === "Sub Category") {
       setSelectedSubCategory(null);
       setExistingImage(null);
@@ -237,139 +244,163 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
   };
 
   const handleSubCategoryChange = (value) => {
-    console.log("Subcategory changed to:", value);
     setSelectedSubCategory(value);
   };
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
-      <Segmented
-        options={["Category", "Sub Category"]}
-        block
-        className="border border-smart mb-4 w-1/2"
-        onChange={handleSelected}
-        value={selected}
-      />
-      <div className="w-1/2 flex gap-4">
-        <div className="w-full mt-4">
-          <Form
-            form={form}
-            name="categoryForm"
-            layout="vertical"
-            onFinish={onFinish}
-            autoComplete="off"
-            className="bg-white p-4 border rounded-lg"
-          >
-            <Form.Item
-              label="Select Category"
-              name="category"
-              rules={[{ required: true, message: "Please select a category!" }]}
-            >
-              <Select
-                placeholder="Select Category"
-                options={categoryOptions}
-                onChange={handleCategoryChange}
-                loading={isLoading}
-              />
-            </Form.Item>
+      <motion.div
+        initial={{ y: 0, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="w-full flex justify-center"
+      >
+        <Segmented
+          options={["Category", "Sub Category"]}
+          block
+          className="border border-smart mb-4 w-1/2"
+          onChange={handleSelected}
+          value={selected}
+        />
+      </motion.div>
 
-            {selected === "Sub Category" && (
-              <>
+      <div className="w-1/2 flex gap-4">
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={selected}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="w-full"
+          >
+            <div className="w-full mt-4">
+              <Form
+                form={form}
+                name="categoryForm"
+                layout="vertical"
+                onFinish={onFinish}
+                autoComplete="off"
+                className="bg-white p-4 border rounded-lg"
+              >
                 <Form.Item
-                  label="Select Sub Category"
-                  name="subCategory"
+                  label="Select Category"
+                  name="category"
                   rules={[
-                    { required: true, message: "Please select a subcategory!" },
+                    { required: true, message: "Please select a category!" },
                   ]}
                 >
                   <Select
-                    placeholder="Select Sub Category"
-                    options={subCategoryOptions}
-                    onChange={handleSubCategoryChange}
-                    disabled={
-                      !selectedCategory || subCategoryOptions.length === 0
-                    }
-                    loading={isSubCategoriesLoading}
+                    placeholder="Select Category"
+                    options={categoryOptions}
+                    onChange={handleCategoryChange}
+                    loading={isLoading}
                   />
                 </Form.Item>
 
-                <Form.Item
-                  label="Subcategory Name"
-                  name="subCategoryName"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter the subcategory name!",
-                    },
-                  ]}
-                >
-                  <Input disabled={!selectedSubCategory} />
+                {selected === "Sub Category" && (
+                  <>
+                    <Form.Item
+                      label="Select Sub Category"
+                      name="subCategory"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please select a subcategory!",
+                        },
+                      ]}
+                    >
+                      <Select
+                        placeholder="Select Sub Category"
+                        options={subCategoryOptions}
+                        onChange={handleSubCategoryChange}
+                        disabled={
+                          !selectedCategory || subCategoryOptions.length === 0
+                        }
+                        loading={isSubCategoriesLoading}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Subcategory Name"
+                      name="subCategoryName"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter the subcategory name!",
+                        },
+                      ]}
+                    >
+                      <Input disabled={!selectedSubCategory} />
+                    </Form.Item>
+                  </>
+                )}
+
+                {selected === "Category" && (
+                  <Form.Item
+                    label="Category Name"
+                    name="categoryName"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter the Category name!",
+                      },
+                    ]}
+                  >
+                    <Input disabled={!selectedCategory} />
+                  </Form.Item>
+                )}
+
+                {existingImage && (
+                  <div className="mb-4">
+                    <p className="mb-2">Current Image:</p>
+                    <img
+                      src={getImageUrl(existingImage)}
+                      alt="Current image"
+                      width={100}
+                      height={100}
+                      className="border rounded"
+                    />
+                  </div>
+                )}
+
+                <Form.Item label="Upload New Image" name="image">
+                  <Upload
+                    listType="picture"
+                    beforeUpload={beforeUpload}
+                    fileList={fileList}
+                    maxCount={1}
+                    accept=".png,.jpg,.jpeg"
+                    onChange={handleImageChange}
+                    customRequest={({ onSuccess }) =>
+                      setTimeout(() => onSuccess("ok"), 0)
+                    }
+                    disabled={
+                      (selected === "Category" && !selectedCategory) ||
+                      (selected === "Sub Category" && !selectedSubCategory)
+                    }
+                  >
+                    <Button icon={<InboxOutlined />}>Click to Upload</Button>
+                  </Upload>
                 </Form.Item>
-              </>
-            )}
 
-            {selected === "Category" && (
-              <Form.Item
-                label="Category Name"
-                name="categoryName"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter the Category name!",
-                  },
-                ]}
-              >
-                <Input disabled={!selectedCategory} />
-              </Form.Item>
-            )}
-
-            {existingImage && (
-              <div className="mb-4">
-                <p className="mb-2">Current Image:</p>
-                <img
-                  src={getImageUrl(existingImage)}
-                  alt="Current image"
-                  width={100}
-                  height={100}
-                  className="border rounded"
-                />
-              </div>
-            )}
-
-            <Form.Item label="Upload New Image" name="image">
-              <Upload
-                listType="picture"
-                beforeUpload={beforeUpload}
-                fileList={fileList}
-                maxCount={1}
-                accept=".png,.jpg,.jpeg"
-                onChange={handleImageChange}
-                customRequest={({ onSuccess }) =>
-                  setTimeout(() => onSuccess("ok"), 0)
-                }
-                disabled={
-                  (selected === "Category" && !selectedCategory) ||
-                  (selected === "Sub Category" && !selectedSubCategory)
-                }
-              >
-                <Button icon={<InboxOutlined />}>Click to Upload</Button>
-              </Upload>
-            </Form.Item>
-
-            <Form.Item>
-              <Button
-                htmlType="submit"
-                className="bg-smart/80 border-none text-white min-w-20 min-h-10 text-xs rounded-lg"
-                disabled={
-                  !selectedCategory ||
-                  (selected === "Sub Category" && !selectedSubCategory)
-                }
-              >
-                Update {selected}
-              </Button>
-            </Form.Item>
-          </Form>
-        </div>
+                <Form.Item>
+                  <Button
+                    htmlType="submit"
+                    className="bg-smart/80 border-none text-white min-w-20 min-h-10 text-xs rounded-lg"
+                    disabled={
+                      !selectedCategory ||
+                      (selected === "Sub Category" && !selectedSubCategory)
+                    }
+                  >
+                    Update {selected}
+                  </Button>
+                </Form.Item>
+              </Form>
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );
