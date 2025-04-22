@@ -269,7 +269,7 @@ const CategoryFAQ = () => {
       ) : categories.length === 0 ? (
         <Empty description="No categories found" />
       ) : (
-        <div className="h-[34rem] overflow-auto">
+        <div className="h-[34rem] overflow-auto border-b rounded-lg">
           <Collapse accordion onChange={handlePanelChange}>
             {categories.map((category) => (
               <Panel

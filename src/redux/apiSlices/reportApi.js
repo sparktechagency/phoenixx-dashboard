@@ -16,7 +16,7 @@ const reportApi = api.injectEndpoints({
       query: (id) => {
         return {
           url: `/reports/delete-post/${id}`,
-          method: "DELETE",
+          method: "PATCH",
         };
       },
       invalidatesTags: ["Report"],
