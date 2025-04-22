@@ -9,27 +9,32 @@ import {
   CartesianGrid,
 } from "recharts";
 import PickDate from "../../../components/common/PickDate";
+import { useGetTotalusersQuery } from "../../../redux/apiSlices/dashboardApi";
 
 function TotalUserChart() {
+  const { data: totalUSers, isLoading, isError } = useGetTotalusersQuery();
   const [visibleBars, setVisibleBars] = useState({
     Customer: true,
     Revenue: true,
   });
 
-  const data = [
-    { month: "Jan", Customer: 4000, Revenue: 2400 },
-    { month: "Feb", Customer: 3000, Revenue: 1398 },
-    { month: "Mar", Customer: 2000, Revenue: 9800 },
-    { month: "Apr", Customer: 2780, Revenue: 3908 },
-    { month: "May", Customer: 1890, Revenue: 4800 },
-    { month: "Jun", Customer: 2390, Revenue: 3800 },
-    { month: "Jul", Customer: 3490, Revenue: 4300 },
-    { month: "Aug", Customer: 2000, Revenue: 9800 },
-    { month: "Sep", Customer: 2780, Revenue: 3908 },
-    { month: "Oct", Customer: 1890, Revenue: 4800 },
-    { month: "Nov", Customer: 2390, Revenue: 3800 },
-    { month: "Dec", Customer: 3490, Revenue: 4300 },
-  ];
+  // Transform the API response into the format your component expects
+  const data = totalUSers?.data
+    ? [
+        { month: "Jan", Customer: totalUSers.data.jan || 0 },
+        { month: "Feb", Customer: totalUSers.data.feb || 0 },
+        { month: "Mar", Customer: totalUSers.data.mar || 0 },
+        { month: "Apr", Customer: totalUSers.data.apr || 0 },
+        { month: "May", Customer: totalUSers.data.may || 0 },
+        { month: "Jun", Customer: totalUSers.data.jun || 0 },
+        { month: "Jul", Customer: totalUSers.data.jul || 0 },
+        { month: "Aug", Customer: totalUSers.data.aug || 0 },
+        { month: "Sep", Customer: totalUSers.data.sep || 0 },
+        { month: "Oct", Customer: totalUSers.data.oct || 0 },
+        { month: "Nov", Customer: totalUSers.data.nov || 0 },
+        { month: "Dec", Customer: totalUSers.data.dec || 0 },
+      ]
+    : [];
 
   const handleLegendClick = (dataKey) => {
     setVisibleBars({
@@ -43,12 +48,7 @@ function TotalUserChart() {
       <div className="flex items-center justify-center gap-8 absolute top-1 right-[40%]">
         <div
           className="flex items-center gap-2 cursor-pointer"
-          onClick={() =>
-            setVisibleBars((prev) => ({
-              ...prev,
-              Customer: !prev.Customer,
-            }))
-          }
+          onClick={() => handleLegendClick("Customer")}
         >
           <span
             className="inline-block w-4 h-4 mr-2 rounded-full"
@@ -61,12 +61,7 @@ function TotalUserChart() {
 
         <div
           className="flex items-center gap-2 cursor-pointer"
-          onClick={() =>
-            setVisibleBars((prev) => ({
-              ...prev,
-              Revenue: !prev.Revenue,
-            }))
-          }
+          onClick={() => handleLegendClick("Revenue")}
         >
           <span
             className="inline-block w-4 h-4 mr-2 rounded-full"
@@ -84,7 +79,7 @@ function TotalUserChart() {
     <>
       <div className="flex items-center justify-between px-6 mt-5 relative">
         <h1 className="text-2xl font-semibold">Total User Chart</h1>
-        <CustomLegend />
+        {/* <CustomLegend /> */}
         <PickDate />
       </div>
 
@@ -109,9 +104,9 @@ function TotalUserChart() {
             {visibleBars.Customer && (
               <Bar dataKey="Customer" fill="#0100fa" barSize={35} radius={4} />
             )}
-            {visibleBars.Revenue && (
+            {/* {visibleBars.Revenue && (
               <Bar dataKey="Revenue" fill="#bbbbfa" barSize={35} radius={4} />
-            )}
+            )} */}
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -138,7 +133,7 @@ const CustomTooltip = ({ active, payload, label }) => {
                 style={{ backgroundColor: color }}
               ></span>
               <span className="text-gray-800">
-                {labelText}: {pld.value}K
+                {labelText}: {pld.value}
               </span>
             </div>
           );

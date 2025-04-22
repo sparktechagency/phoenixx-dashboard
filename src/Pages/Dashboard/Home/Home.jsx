@@ -6,31 +6,8 @@ import CustomerServiceChart from "./TotalUserChart";
 import RevenueAnalysis from "./RevenueAnalysis";
 import TinyChart from "./TinyChart";
 import TotalUserChart from "./TotalUserChart";
+import { useGetStatsQuery } from "../../../redux/apiSlices/dashboardApi";
 dayjs.extend(customParseFormat);
-
-const stats = [
-  {
-    label: "Total Post",
-    value: "3765",
-    percent: +2.6,
-    color: "#00a76f",
-    icon: [<IoTrendingUp size={20} />, <IoTrendingDown size={20} />],
-  },
-  {
-    label: "Active Users",
-    value: "3765",
-    percent: +2.6,
-    color: "#00b8d9",
-    icon: [<IoTrendingUp size={20} />, <IoTrendingDown size={20} />],
-  },
-  {
-    label: "Total Revenue",
-    value: "3765",
-    percent: +2.6,
-    color: "#18a0fb",
-    icon: [<IoTrendingUp size={20} />, <IoTrendingDown size={20} />],
-  },
-];
 
 export const Card = ({ item }) => {
   return (
@@ -62,6 +39,31 @@ export const Card = ({ item }) => {
 };
 
 const Home = () => {
+  const { data: getStats, isLoading, isError } = useGetStatsQuery();
+  console.log(getStats?.data);
+  const stats = [
+    {
+      label: "Total Post",
+      value: getStats?.data?.totalPost,
+      percent: +2.6,
+      color: "#00a76f",
+      icon: [<IoTrendingUp size={20} />, <IoTrendingDown size={20} />],
+    },
+    {
+      label: "Active Users",
+      value: getStats?.data?.totalUsers,
+      percent: +2.6,
+      color: "#00b8d9",
+      icon: [<IoTrendingUp size={20} />, <IoTrendingDown size={20} />],
+    },
+    {
+      label: "Total Revenue",
+      value: getStats?.data?.totalRevenue,
+      percent: +2.6,
+      color: "#18a0fb",
+      icon: [<IoTrendingUp size={20} />, <IoTrendingDown size={20} />],
+    },
+  ];
   return (
     <div className="">
       <div className="flex flex-col flex-wrap items-end gap-5 justify-between w-full bg-transparent rounded-md">

@@ -26,39 +26,39 @@ function Profile() {
   return (
     <div className="bg-quilocoP w-full min-h-72 flex flex-col justify-start items-center px-4 border bg-white rounded-lg">
       <div className="relative mt-6 flex flex-col items-center justify-center">
-        <img
-          src={
-            uploadedImage
-              ? URL.createObjectURL(uploadedImage)
-              : getImageUrl(user?.profile)
-              ? getImageUrl(user?.profile)
-              : man
-          }
-          width={120}
-          height={120}
-          className="border border-slate-500 rounded-full object-cover"
-        />
-        {showButton && (
-          <Upload
-            showUploadList={false}
-            beforeUpload={(file) => {
-              const isImage = file.type.startsWith("image/");
-              if (!isImage) {
-                message.error("You can only upload image files!");
-                return Upload.LIST_IGNORE;
-              }
-              setUploadedImage(file);
-              return false;
-            }}
-          >
-            <button>
-              <MdCameraEnhance
-                size={30}
-                className="text-white absolute top-[4.5rem] left-[4.5rem] border rounded-full bg-smart p-1"
-              />
-            </button>
-          </Upload>
-        )}
+        <div className=" w-[120px]  h-[120px] overflow-hidden  rounded-full border border-slate-500">
+          <img
+            src={
+              uploadedImage
+                ? URL.createObjectURL(uploadedImage)
+                : getImageUrl(user?.profile)
+                ? getImageUrl(user?.profile)
+                : man
+            }
+            className="w-full h-full object-cover"
+          />
+          {showButton && (
+            <Upload
+              showUploadList={false}
+              beforeUpload={(file) => {
+                const isImage = file.type.startsWith("image/");
+                if (!isImage) {
+                  message.error("You can only upload image files!");
+                  return Upload.LIST_IGNORE;
+                }
+                setUploadedImage(file);
+                return false;
+              }}
+            >
+              <button>
+                <MdCameraEnhance
+                  size={30}
+                  className="text-white absolute top-[5.1rem] left-[4.5rem] border rounded-full bg-smart p-1"
+                />
+              </button>
+            </Upload>
+          )}
+        </div>
         <h3 className="text-black text-xl mt-3">{user?.name || "Unnamed"}</h3>
       </div>
       <div className="w-full flex justify-end">
