@@ -1,16 +1,21 @@
-import { FaQuoteRight } from "react-icons/fa6";
+import { FaQuoteRight, FaTags } from "react-icons/fa6";
 import { CgTemplate } from "react-icons/cg";
 import { Menu } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { BsFilePost } from "react-icons/bs";
+import { TbTags } from "react-icons/tb";
 import { SiAntdesign } from "react-icons/si";
-import { HiUsers } from "react-icons/hi";
+import { HiOutlineUserGroup, HiUsers } from "react-icons/hi";
 import { RxDashboard } from "react-icons/rx";
 import { PiWallet } from "react-icons/pi";
+import { BsCashCoin } from "react-icons/bs";
 import { FiLogOut } from "react-icons/fi";
 import { RiContactsBook3Line } from "react-icons/ri";
-import { MdCategory, MdOutlineReportProblem } from "react-icons/md";
+import {
+  MdCategory,
+  MdOutlineCategory,
+  MdOutlineReportProblem,
+} from "react-icons/md";
 import { MdOutlinePrivacyTip } from "react-icons/md";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { GrAnnounce } from "react-icons/gr";
@@ -40,7 +45,7 @@ const Sidebar = ({ isCollapsed }) => {
 
     {
       key: "/user-list",
-      icon: <HiUsers size={23} />,
+      icon: <HiOutlineUserGroup size={23} />,
       label: isCollapsed ? (
         <Link to="/user-list">User</Link>
       ) : (
@@ -58,7 +63,7 @@ const Sidebar = ({ isCollapsed }) => {
     // },
     {
       key: "/category-subcategory-management",
-      icon: <MdCategory size={25} />,
+      icon: <MdOutlineCategory size={25} />,
       label: isCollapsed ? (
         <Link to="/category-subcategory-management">
           Category-Sub Cateogory
@@ -71,7 +76,7 @@ const Sidebar = ({ isCollapsed }) => {
     },
     {
       key: "/package",
-      icon: <PiWallet size={25} />,
+      icon: <TbTags size={25} />,
       label: isCollapsed ? (
         <Link to="/package">Package</Link>
       ) : (
@@ -80,7 +85,7 @@ const Sidebar = ({ isCollapsed }) => {
     },
     {
       key: "/transaction",
-      icon: <PiWallet size={25} />,
+      icon: <BsCashCoin size={25} />,
       label: isCollapsed ? (
         <Link to="/transaction">Transaction</Link>
       ) : (

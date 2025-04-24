@@ -10,6 +10,7 @@ import {
   useUpdatePackageMutation,
 } from "../../../redux/apiSlices/packageApi";
 import { message } from "antd";
+import { FaTags } from "react-icons/fa6";
 
 function Package() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -108,7 +109,10 @@ function Package() {
       ) : (
         <>
           <div className="flex justify-between items-center mb-5">
-            <h1 className="text-[20px] font-medium">{GetPageName()}</h1>
+            <h1 className="text-[20px] font-medium flex items-center gap-2">
+              {GetPageName()}
+              <FaTags />
+            </h1>
             <button
               onClick={handleAdd}
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
