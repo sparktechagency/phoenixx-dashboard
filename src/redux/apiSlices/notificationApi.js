@@ -3,28 +3,34 @@ import { api } from "../api/baseApi";
 const notificationSlice = api.injectEndpoints({
   endpoints: (builder) => ({
     getNotification: builder.query({
-      query: () => {
+      query: ({ page, limit }) => {
         return {
-          url: `/notifications?recipientRole=admin`,
+          url: `/notifications?recipientRole=admin&page=${page}&limit=${limit}`,
           method: "GET",
-          // headers:{
-          //     Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
-          // }
         };
       },
     }),
-    getRead: builder.query({
-      query: (read) => {
+    readOneNotification: builder.mutation({
+      query: (id) => {
         return {
-          url: `/notifications?read=${read}`,
-          method: "GET",
-          // headers:{
-          //     Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
-          // }
+          url: `/notifications/mark-single-as-read/${id}`,
+          method: "PATCH",
+        };
+      },
+    }),
+    readAllNotification: builder.mutation({
+      query: () => {
+        return {
+          url: `/notifications/mark-all-as-read`,
+          method: "PATCH",
         };
       },
     }),
   }),
 });
 
-export const { useGetNotificationQuery, useGetReadQuery } = notificationSlice;
+export const {
+  useGetNotificationQuery,
+  useReadOneNotificationMutation,
+  useReadAllNotificationMutation,
+} = notificationSlice;

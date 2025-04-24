@@ -1,22 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { FaRegBell } from "react-icons/fa";
 import moment from "moment";
-import { useGetNotificationQuery } from "../../../redux/apiSlices/notificationApi";
-import { Spin } from "antd";
+import {
+  useGetNotificationQuery,
+  useReadOneNotificationMutation,
+} from "../../../redux/apiSlices/notificationApi";
+import { message, Pagination, Spin } from "antd";
 import { TbClockHour10 } from "react-icons/tb";
 import { BiBell } from "react-icons/bi";
+import Spinner from "../../../components/common/Spinner";
+
 const Notifications = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [notifications, setNotifications] = useState([]);
+
   const {
     data: getNotification,
     isLoading,
     isError,
     refetch,
-  } = useGetNotificationQuery();
-  console.log("getNotification", getNotification);
+    isFetching,
+  } = useGetNotificationQuery({ page: currentPage, limit: 10 });
 
-  const [notifications, setNotifications] = useState([]);
+  const [readOneNotification, { isLoading: readingOne }] =
+    useReadOneNotificationMutation();
 
-  // Update state when notifications data is loaded
+  // Update notifications data when new data is fetched
   useEffect(() => {
     if (getNotification?.success && getNotification?.data?.data) {
       setNotifications(getNotification.data.data);
@@ -27,22 +35,25 @@ const Notifications = () => {
     timestamp ? moment(timestamp).fromNow() : "Just now";
 
   const handleMarkAsRead = async (notificationId) => {
-    // Mark single notification as read
-    // In a real implementation, you would call an API here
-    setNotifications((prev) =>
-      prev.map((item) =>
-        item._id === notificationId ? { ...item, read: true } : item
-      )
-    );
+    try {
+      const res = await readOneNotification(notificationId);
+      if (res.data?.success) {
+        message.success("Marked as read");
+        refetch(); // Refresh the notifications after marking as read
+      } else {
+        message.error("Could not mark as read");
+      }
+    } catch (err) {
+      console.log(err);
+      message.error("An error occurred");
+    }
   };
 
   const handleMarkAllAsRead = async () => {
-    // Mark all notifications as read
-    // In a real implementation, you would call an API here
     setNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
+    // You can implement an API call to mark all notifications as read if required
   };
 
-  // Helper function to get icon based on notification type
   const getTypeIcon = (type) => {
     switch (type) {
       case "warning":
@@ -82,7 +93,7 @@ const Notifications = () => {
   }
 
   return (
-    <div className="px-4 ">
+    <div className="px-4">
       <div className="flex items-center justify-between mb-2 text-white">
         <h2 className="text-[22px] text-smart">All Notifications</h2>
         {notifications.some((item) => !item.read) && (
@@ -95,51 +106,70 @@ const Notifications = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-5 h-[37rem] py-2 border rounded-lg overflow-auto">
-        {notifications && notifications.length > 0 ? (
-          notifications.map((notification) => (
-            <div
-              key={notification._id}
-              className="border-b pb-2 border-gray-500 flex items-center gap-3"
-            >
+      {isFetching && currentPage > 1 ? (
+        <div className="flex justify-center items-center h-[35rem]">
+          <Spin size="large" />
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2 h-[35rem] my-2 py-2 border rounded-lg overflow-auto">
+          {notifications && notifications.length > 0 ? (
+            notifications.map((notification) => (
               <div
-                className={`text-smart  bg-white border p-2 rounded-md flex items-center justify-center w-[50px] h-[50px] ${
-                  !notification.read ? "animate-bounce" : ""
-                }`}
+                key={notification._id}
+                className="border-b pb-2 border-gray-500 flex items-center gap-3 h-fit"
               >
-                <BiBell />
-              </div>
-              <div className="text-black flex-1">
-                <p className="font-semibold flex gap-2 items-center">
-                  {notification.type === "warning" ? "Warning" : "Notification"}{" "}
-                  {getTypeIcon(notification.type)}
-                </p>
-                <p>{notification.message || "New Notification"}</p>
-                {/* {notification.link && (
-                  <a
-                    href={notification.link}
-                    className="text-blue-500 text-sm hover:underline"
-                  >
-                    View details
-                  </a>
-                )} */}
-                <p className="text-gray-400 flex items-center gap-2">
-                  <TbClockHour10 /> {formatTime(notification.createdAt)}
-                </p>
-              </div>
-              {!notification.read && (
-                <button
-                  className="text-blue-500 text-sm ml-auto"
-                  onClick={() => handleMarkAsRead(notification._id)}
+                <div
+                  className={`text-smart bg-white border p-2 rounded-md flex items-center justify-center w-[50px] h-[50px] ${
+                    !notification.read ? "animate-bounce" : ""
+                  }`}
                 >
-                  Mark as Read
-                </button>
-              )}
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-400">No notifications available.</p>
-        )}
+                  <BiBell />
+                </div>
+                <div className="text-black flex-1">
+                  <p className="font-semibold flex gap-2 items-center">
+                    {notification.type === "warning"
+                      ? "Warning"
+                      : "Notification"}{" "}
+                    {getTypeIcon(notification.type)}
+                  </p>
+                  <p>{notification.message || "New Notification"}</p>
+                  <p className="text-gray-400 flex items-center gap-2">
+                    <TbClockHour10 /> {formatTime(notification.createdAt)}
+                  </p>
+                </div>
+                {!notification.read && (
+                  <button
+                    className="text-blue-500 border-2 border-transparent rounded-lg active:border-2 border-gray-400 bg-white px-2 py-1 text-xs ml-auto"
+                    onClick={() => handleMarkAsRead(notification._id)}
+                  >
+                    {readingOne ? (
+                      <Spinner label={"Reading..."} />
+                    ) : (
+                      "Mark as Read"
+                    )}
+                  </button>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400">No notifications available.</p>
+          )}
+        </div>
+      )}
+
+      <div className="mt-4 flex justify-center">
+        <Pagination
+          current={currentPage}
+          pageSize={10}
+          total={getNotification?.data?.meta?.total || 0}
+          showSizeChanger={false}
+          onChange={(page) => {
+            setCurrentPage(page); // Update currentPage when page changes
+          }}
+          showTotal={(total) => (
+            <span className="text-black">{`Total ${total} items`}</span>
+          )}
+        />
       </div>
     </div>
   );
