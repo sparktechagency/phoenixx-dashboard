@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ConfigProvider, Segmented } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
 import CategorySubcategoryForm from "./CategorySubcategoryForm";
@@ -7,10 +7,20 @@ import EditCatSub from "./EditCatSub";
 import DeleteCatSub from "./DeleteCatSub";
 
 function CategoryManagement() {
-  const [selected, setSelected] = useState("Quick View");
+  // Initialize state with value from localStorage or default to "Quick View"
+  const [selected, setSelected] = useState(() => {
+    const saved = localStorage.getItem("lastActiveSegment");
+    return saved || "Quick View";
+  });
+
   const [direction, setDirection] = useState(0);
   const segments = ["Quick View", "Add New", "Edit", "Delete"];
   const prevIndexRef = useRef(0);
+
+  // Save to localStorage whenever selected changes
+  useEffect(() => {
+    localStorage.setItem("lastActiveSegment", selected);
+  }, [selected]);
 
   const handleSelected = (value) => {
     const currentIndex = segments.indexOf(selected);
@@ -79,8 +89,6 @@ function CategoryManagement() {
       </motion.div>
 
       <div className="w-full flex-1 overflow-hidden">
-        {" "}
-        {/* Add this wrapper */}
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={selected}

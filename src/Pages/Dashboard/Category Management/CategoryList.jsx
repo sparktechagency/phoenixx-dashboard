@@ -3,6 +3,7 @@ import { DownOutlined } from "@ant-design/icons";
 import { Tree, Spin, Alert } from "antd";
 import { useCategoryQuery } from "../../../redux/apiSlices/categoryApi";
 import { useGetSubCategoriesQuery } from "../../../redux/apiSlices/subCategoryApi";
+import Loading from "../../../components/common/Loading";
 
 function CategoryList() {
   const { data: categoryData, isLoading, isError } = useCategoryQuery();
@@ -35,15 +36,14 @@ function CategoryList() {
     });
   };
 
-  if (isLoading) return <Spin className="p-4" tip="Loading categories..." />;
-  if (isError)
-    return <Alert type="error" message="Failed to load categories" />;
-
   const categories = categoryData?.data?.result || [];
   const subCategories = subCategoryData?.data?.result || [];
 
   const treeData = buildTreeData(categories, subCategories);
 
+  if (isLoading) return <Loading />;
+  if (isError)
+    return <Alert type="error" message="Failed to load categories" />;
   return (
     <div className="w-1/2 mx-auto">
       <Tree

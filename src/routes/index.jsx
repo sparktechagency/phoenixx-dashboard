@@ -9,7 +9,6 @@ import ForgotPassword from "../Pages/Auth/ForgotPassword";
 import VerifyOtp from "../Pages/Auth/VerifyOtp";
 import ResetPassword from "../Pages/Auth/ResetPassword";
 import NotFound from "../NotFound";
-
 import TermsAndCondition from "../Pages/Dashboard/TermsAndCondition/TermsAndCondition";
 import Transaction from "../Pages/Dashboard/Transaction/Transaction.jsx";
 import Setting from "../Pages/Dashboard/Setting/Setting.jsx";
@@ -17,13 +16,13 @@ import Contact from "../Pages/Dashboard/Contact/Contact.jsx";
 import Report from "../Pages/Dashboard/Report/Report.jsx";
 import User from "../Pages/Dashboard/UserManagement/User.jsx";
 import PostList from "../Pages/Dashboard/Post management/PostList.jsx";
-import Category from "../Pages/Dashboard/Category/Category.jsx";
 import Announcement from "../Pages/Dashboard/Announcement/Announcement.jsx";
 import Logo from "../Pages/Dashboard/Logo/LogoList.jsx";
 import CategoryManagement from "../Pages/Dashboard/Category Management/CategoryManagement.jsx";
 import Notifications from "../Pages/Dashboard/Notification/Notifications.jsx";
 import CategoryFAQ from "../Pages/Dashboard/FAQ/CategoryFAQ.jsx";
 import ProtectedRoute from "../components/common/ProtectedRoute.jsx";
+import Package from "../Pages/Dashboard/Package/Package.jsx";
 
 const router = createBrowserRouter([
   {
@@ -39,7 +38,10 @@ const router = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
-
+      {
+        path: "/package",
+        element: <Package />,
+      },
       {
         path: "/transaction",
         element: <Transaction />,
@@ -79,10 +81,7 @@ const router = createBrowserRouter([
         path: "/contact",
         element: <Contact />,
       },
-      {
-        path: "/category-list",
-        element: <Category />,
-      },
+
       {
         path: "/privacy-policy",
         element: <PrivacyPolicy />,

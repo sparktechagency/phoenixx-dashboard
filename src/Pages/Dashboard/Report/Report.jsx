@@ -19,6 +19,8 @@ import {
   useGiveWarningMutation,
 } from "../../../redux/apiSlices/reportApi";
 import { PiFlagBannerFill } from "react-icons/pi";
+import Spinner from "../../../components/common/Spinner";
+import Loading from "../../../components/common/Loading";
 
 const columns = (handleViewDetails, handleDeleteRow, showWarningModal) => [
   {
@@ -109,7 +111,8 @@ function Report() {
     page: currentPage,
     limit: pageSize,
   });
-  const [warnUser] = useGiveWarningMutation();
+  const [warnUser, { isLoading: warnProcessing, isError: warnError }] =
+    useGiveWarningMutation();
   const [deletePost] = useDeleteReportedPostMutation();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [userData, setUserData] = useState([]);
@@ -238,6 +241,7 @@ function Report() {
     setPageSize(pageSize);
   };
 
+  if (isLoading) return <Loading />;
   return (
     <>
       <div className="flex justify-between items-center py-5">
@@ -309,7 +313,7 @@ function Report() {
             onClick={handleWarning}
             className="bg-smart text-white border-none"
           >
-            Send Warning
+            {warnProcessing ? <Spinner label={"Sending..."} /> : "Send Warning"}
           </Button>,
         ]}
       >

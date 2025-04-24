@@ -7,25 +7,18 @@ import { CgMenu } from "react-icons/cg";
 import { UserOutlined, DownOutlined } from "@ant-design/icons";
 import NotificationPopover from "../../Pages/Dashboard/Notification/NotificationPopover";
 import { RiSettings5Line, RiShutDownLine } from "react-icons/ri";
+import { useGetProfileQuery } from "../../redux/apiSlices/profileApi";
+import { getImageUrl } from "../../components/common/ImageUrl";
 const Header = ({ toggleSidebar }) => {
-  const { user } = useUser();
-  const src = user?.image?.startsWith("https")
-    ? user?.image
-    : `https://your-image-source/${user?.image}`;
-  const [selectedCountry, setSelectedCountry] = useState("USA");
-
-  const handleCountryChange = (value) => {
-    setSelectedCountry(value);
-    console.log("Selected Language:", value);
-  };
+  const { data: getProfile, isError, isLoading } = useGetProfileQuery();
+  console.log(getProfile?.data);
 
   const userMenuContent = (
     <div>
-      {" "}
       <div className="mr-4 flex gap-2.5 font-semibold hover:text-black cursor-pointer">
-        {`${user?.firstName} ${user?.lastName}`}
+        {`${getProfile?.data?.name} `}
       </div>
-      <p>Super Admin</p>
+      <p>{`${getProfile?.data?.role} `}</p>
       <Link
         to="/settings"
         className="flex items-center gap-2 py-1 mt-1  text-black hover:text-smart"
@@ -102,7 +95,7 @@ const Header = ({ toggleSidebar }) => {
               shape="square"
               size={60}
               className="rounded cursor-pointer"
-              src={src}
+              src={getImageUrl(getProfile?.data?.profile)}
             />
           </Popover>
         </Flex>

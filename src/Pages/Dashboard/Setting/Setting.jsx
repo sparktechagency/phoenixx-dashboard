@@ -1,15 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ConfigProvider, Segmented } from "antd";
 import AdminList from "./AdminList";
 import AdminPassword from "./AdminPassword";
 import Profile from "./Profile";
+import { motion, AnimatePresence } from "framer-motion";
 
 function Setting() {
-  const [selected, setSelected] = useState("Admin");
+  const options = ["Admin", "Password", "Profile"];
+  const [selected, setSelected] = useState(() => {
+    // Load last selected from localStorage or fallback to "Admin"
+    return localStorage.getItem("setting_segment") || "Admin";
+  });
+  const [direction, setDirection] = useState(1);
 
   const handleSegmentChange = (value) => {
+    const currentIndex = options.indexOf(selected);
+    const newIndex = options.indexOf(value);
+
+    setDirection(newIndex > currentIndex ? 1 : -1);
     setSelected(value);
-    console.log(value);
+    localStorage.setItem("setting_segment", value); // Persist selection
   };
 
   const renderContent = () => {
@@ -23,6 +33,21 @@ function Setting() {
       default:
         return null;
     }
+  };
+
+  const variants = {
+    enter: (direction) => ({
+      x: direction > 0 ? 100 : -100,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction) => ({
+      x: direction > 0 ? -100 : 100,
+      opacity: 0,
+    }),
   };
 
   return (
@@ -41,16 +66,28 @@ function Setting() {
       }}
     >
       <div className="py-8 font-medium w-1/2">
-        <div className="w-full">
-          <Segmented
-            options={["Admin", "Password", "Profile"]}
-            value={selected}
-            onChange={handleSegmentChange}
-            block
-            className="mb-6 border border-[#0100fa]"
-          />
-        </div>
-        {renderContent()}
+        <Segmented
+          options={options}
+          value={selected}
+          onChange={handleSegmentChange}
+          block
+          className="mb-6 border border-[#0100fa]"
+        />
+
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={selected}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            {renderContent()}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </ConfigProvider>
   );

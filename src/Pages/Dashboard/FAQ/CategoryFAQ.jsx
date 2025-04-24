@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Card, Collapse, Empty, Form, message, Select } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import { AddEditModal, DeleteModal } from "./Modals";
 import { FiEdit3 } from "react-icons/fi";
 import { ImBin } from "react-icons/im";
@@ -16,6 +16,8 @@ import {
   useUpdateFAQMutation,
   useDeleteFAQMutation,
 } from "../../../redux/apiSlices/faqApi";
+import Loading from "../../../components/common/Loading";
+import Error from "../../../components/common/Error";
 
 const { Panel } = Collapse;
 const { Option } = Select;
@@ -29,7 +31,11 @@ const CategoryFAQ = () => {
   const [editItem, setEditItem] = useState(null);
   const [categories, setCategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-  const { data: faqCategory, isLoading, isError } = useCategoryFAQQuery();
+  const {
+    data: faqCategory,
+    isLoading,
+    isError: cfaqError,
+  } = useCategoryFAQQuery();
   const [createFAQC] = useCreateFAQCategoryMutation();
   const [updateFAQC] = useUpdateFAQCategoryMutation();
   const [deleteFAQC] = useDeleteFAQCategoryMutation();
@@ -37,10 +43,11 @@ const CategoryFAQ = () => {
   const [createFAQ] = useCreateFAQMutation();
   const [updateFAQ] = useUpdateFAQMutation();
   const [deleteFAQ] = useDeleteFAQMutation();
-  const { data: categoryFaqs, isLoading: faqsLoading } = useGetFAQQuery(
-    selectedCategoryId,
-    { skip: !selectedCategoryId }
-  );
+  const {
+    data: categoryFaqs,
+    isLoading: faqsLoading,
+    isError: faqsError,
+  } = useGetFAQQuery(selectedCategoryId, { skip: !selectedCategoryId });
 
   console.log("faqC", faqCategory?.data);
   console.log("categoryFaqs", categoryFaqs?.data?.data); // Check the actual structure
@@ -247,25 +254,33 @@ const CategoryFAQ = () => {
     }
   };
 
+  if (cfaqError) return <Error description={"Error Fetching FAQ Category"} />;
+  // if (faqsError) return <Error description={"Error Fetching FAQ "} />;
+
   return (
     <Card
-      title={<p className="text-black">Category FAQs</p>}
+      title={<p className="text-black font-semibold text-xl">Category FAQs</p>}
       extra={
         <div className="flex gap-2">
           <Button
             icon={<PlusOutlined />}
             onClick={() => openAddModal("category")}
+            className="bg-smart h-8 text-white"
           >
             Add Category
           </Button>
-          <Button icon={<PlusOutlined />} onClick={() => openAddModal("faq")}>
+          <Button
+            icon={<PlusOutlined />}
+            onClick={() => openAddModal("faq")}
+            className="bg-smart h-8 text-white"
+          >
             Add FAQ
           </Button>
         </div>
       }
     >
       {isLoading ? (
-        <div>Loading categories...</div>
+        <Loading />
       ) : categories.length === 0 ? (
         <Empty description="No categories found" />
       ) : (
@@ -274,7 +289,7 @@ const CategoryFAQ = () => {
             {categories.map((category) => (
               <Panel
                 header={
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center font-medium text-base">
                     <span>{category.name}</span>
                     <div
                       className="flex gap-2"

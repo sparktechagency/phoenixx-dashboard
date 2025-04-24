@@ -5,6 +5,9 @@ import {
   usePrivacyPolicyQuery,
 } from "../../../redux/apiSlices/privacyPolicyApi";
 import { message, Spin } from "antd";
+import Loading from "../../../components/common/Loading";
+import ButtonEDU from "../../../components/common/ButtonEDU";
+import Spinner from "../../../components/common/Spinner";
 
 function PrivacyPolicy() {
   const editor = useRef(null);
@@ -119,6 +122,7 @@ function PrivacyPolicy() {
     []
   );
 
+  if (isLoadingPolicy) return <Loading />;
   return (
     <div className="w-full bg-white shadow-md rounded-lg p-6">
       <h1 className="text-2xl font-semibold text-gray-800 mb-4">
@@ -141,20 +145,20 @@ function PrivacyPolicy() {
           </div>
 
           <div className="flex justify-end mt-6">
-            <button
-              className="bg-smart hover:bg-smart/90 transition-colors text-white text-base px-8 py-2.5 rounded-md flex items-center"
+            <ButtonEDU
+              // className="bg-smart hover:bg-smart/90 transition-colors h-8 text-white text-base px-8 py-2.5 rounded-md flex items-center"
               onClick={handleSave}
               disabled={isSaving}
             >
               {isSaving ? (
                 <>
-                  <Spin size="small" className="mr-2" />
+                  <Spinner size="small" className="mr-2" />
                   Saving...
                 </>
               ) : (
                 "Save"
               )}
-            </button>
+            </ButtonEDU>
           </div>
         </>
       )}

@@ -388,4 +388,5 @@ p {
 /* Collapse */
 .ant-collapse > .ant-collapse-item > .ant-collapse-header .ant-collapse-arrow {
   color: #0100fa;
+  margin-top: 29px;
 }

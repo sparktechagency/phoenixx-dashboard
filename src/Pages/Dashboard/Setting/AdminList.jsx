@@ -12,9 +12,10 @@ import {
   useDeleteAdminMutation,
   useGetAllAdminQuery,
 } from "../../../redux/apiSlices/superAdmin";
+import Loading from "../../../components/common/Loading";
 
 const AdminList = () => {
-  const { data: allAdminInfo, isLoading } = useGetAllAdminQuery();
+  const { data: allAdminInfo, isLoading, isError } = useGetAllAdminQuery();
   const [deleteAdmin] = useDeleteAdminMutation();
   const [createAdmin] = useCreateAdminMutation();
   const [admins, setAdmins] = useState([]);
@@ -129,7 +130,7 @@ const AdminList = () => {
     setIsDeleteModalOpen(false);
   };
 
-  if (isLoading) return <Spin tip="Loading admins..." />;
+  if (isLoading) return <Loading />;
 
   return (
     <div className="w-full bg-white rounded-lg shadow-lg p-5">
@@ -162,14 +163,18 @@ const TableHead = ({ searchText, handleSearch, onAdd }) => {
         placeholder="Search admins..."
         value={searchText}
         onChange={handleSearch}
-        className="w-1/3 h-10"
+        className="w-1/3 h-8"
         allowClear
       />
-      <ButtonEDU actionType="add" onClick={onAdd}>
+      <Button
+        actionType="add"
+        onClick={onAdd}
+        className="h-8 bg-smart text-white border-none"
+      >
         <div className="flex items-center justify-center gap-2">
           <FaPlus size={15} /> Add new
         </div>
-      </ButtonEDU>
+      </Button>
     </div>
   );
 };

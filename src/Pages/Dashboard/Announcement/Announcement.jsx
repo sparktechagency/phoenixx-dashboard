@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, ConfigProvider, Modal, Form, message } from "antd";
+import { Table, ConfigProvider, Modal, Form, message, Alert } from "antd";
 import { FiEdit2 } from "react-icons/fi";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import ButtonEDU from "../../../components/common/ButtonEDU";
@@ -12,6 +12,8 @@ import {
 } from "../../../redux/apiSlices/announcementApi";
 import { getImageUrl } from "../../../components/common/ImageUrl";
 import AnnouncementModal from "./AnnouncementModal";
+import Loading from "../../../components/common/Loading";
+import Error from "../../../components/common/Error";
 
 function Announcement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,6 +29,7 @@ function Announcement() {
   const {
     data: getAnnouncement,
     isLoading,
+    isError,
     refetch,
   } = useGetAnnouncementQuery();
   const [createAnnouncement] = useCreateAnnouncementMutation();
@@ -216,6 +219,8 @@ function Announcement() {
     },
   ];
 
+  if (isLoading) return <Loading />;
+  if (isError) return <Error description={"Error Fetching Announcement!"} />;
   return (
     <ConfigProvider
       theme={{

@@ -15,6 +15,8 @@ import { MdOutlinePrivacyTip } from "react-icons/md";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { GrAnnounce } from "react-icons/gr";
 import logo from "../../assets/logo.png";
+import { useGetLogoQuery } from "../../redux/apiSlices/logoApi";
+import { getImageUrl } from "../../components/common/ImageUrl";
 const Sidebar = ({ isCollapsed }) => {
   const location = useLocation();
   const path = location.pathname;
@@ -26,6 +28,8 @@ const Sidebar = ({ isCollapsed }) => {
     localStorage.removeItem("accessToken");
     navigate("/auth/login");
   };
+
+  const { data: getLogo, isLoading, isError } = useGetLogoQuery();
 
   const menuItems = [
     {
@@ -63,6 +67,15 @@ const Sidebar = ({ isCollapsed }) => {
         <Link to="/category-subcategory-management">
           Category-Sub Cateogory
         </Link>
+      ),
+    },
+    {
+      key: "/package",
+      icon: <PiWallet size={25} />,
+      label: isCollapsed ? (
+        <Link to="/package">Package</Link>
+      ) : (
+        <Link to="/package">Package</Link>
       ),
     },
     {
@@ -180,9 +193,12 @@ const Sidebar = ({ isCollapsed }) => {
 
           {!isCollapsed ? (
             // <p className="text-2xl text-smart font-semibold ">Dashboard</p>
-            <img src={logo} />
+            <img src={getImageUrl(getLogo?.data?.logo || logo)} width={150} />
           ) : (
-            <img src={logo} className="mt-3" />
+            <img
+              src={getImageUrl(getLogo?.data?.logo || logo)}
+              className="mt-3"
+            />
           )}
           {/* <img src={"qilocoLogo"} /> */}
         </div>

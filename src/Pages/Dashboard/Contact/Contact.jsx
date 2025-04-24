@@ -8,11 +8,14 @@ import {
   useContactQuery,
   useUpdateContactMutation,
 } from "../../../redux/apiSlices/contact";
+import Spinner from "../../../components/common/Spinner";
+import Loading from "../../../components/common/Loading";
 
 const Contact = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { data: contactInfos, isLoading, isError } = useContactQuery();
-  const [updateContact] = useUpdateContactMutation();
+  const [updateContact, { isLoading: updateProcessing, isError: updateError }] =
+    useUpdateContactMutation();
 
   const [contactInfo, setContactInfo] = useState({
     phone: "",
@@ -72,48 +75,53 @@ const Contact = () => {
     { key: "location", label: "Location", type: "text" },
   ];
 
-  if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading contact information</div>;
+  if (updateError) return <div>Error Updating contact information</div>;
 
   return (
     <div className="py-5">
       <h1 className="text-[20px] font-medium mb-5">Contact</h1>
       <Flex vertical justify="center" gap={30} className="w-full">
-        <div className="flex items-center justify-normal bg-white p-12 w-4/5 gap-4 rounded-xl ">
-          {[
-            {
-              icon: <LiaPhoneVolumeSolid size={50} />,
-              title: "Phone",
-              details: contactInfo.phone,
-            },
-            {
-              icon: <CiMail size={50} />,
-              title: "Email",
-              details: contactInfo.email,
-            },
-            {
-              icon: <PiMapPinAreaLight size={50} />,
-              title: "Location",
-              details: contactInfo.location,
-            },
-          ].map((item, index) => (
-            <Flex
-              vertical
-              key={index}
-              gap={20}
-              align="center"
-              className="flex-auto"
-            >
-              <div className="bg-white rounded-xl shadow-[0px_0px_15px_4px_rgba(0,_0,_0,_0.1)] p-4 hover:bg-smart text-smart hover:text-white">
-                {item.icon}
-              </div>
-              <div className="flex flex-col items-center">
-                <h2 className="text-xl font-semibold">{item.title}</h2>
-                <p className="text-gray-600">{item.details}</p>
-              </div>
-            </Flex>
-          ))}
-        </div>
+        {isLoading ? (
+          <Loading />
+        ) : (
+          <div className="flex items-center justify-normal bg-white p-12 w-4/5 gap-4 rounded-xl">
+            {[
+              {
+                icon: <LiaPhoneVolumeSolid size={50} />,
+                title: "Phone",
+                details: contactInfo.phone,
+              },
+              {
+                icon: <CiMail size={50} />,
+                title: "Email",
+                details: contactInfo.email,
+              },
+              {
+                icon: <PiMapPinAreaLight size={50} />,
+                title: "Location",
+                details: contactInfo.location,
+              },
+            ].map((item, index) => (
+              <Flex
+                vertical
+                key={index}
+                gap={20}
+                align="center"
+                className="flex-auto"
+              >
+                <div className="bg-white rounded-xl shadow-[0px_0px_15px_4px_rgba(0,_0,_0,_0.1)] p-4 hover:bg-smart text-smart hover:text-white">
+                  {item.icon}
+                </div>
+                <div className="flex flex-col items-center">
+                  <h2 className="text-xl font-semibold">{item.title}</h2>
+                  <p className="text-gray-600">{item.details}</p>
+                </div>
+              </Flex>
+            ))}
+          </div>
+        )}
+
         <button
           onClick={showModal}
           className="w-4/5 h-12 bg-white rounded-lg border border-1 border-smart text-smart font-bold tracking-wider hover:bg-smart hover:text-white  "
@@ -168,7 +176,11 @@ const Contact = () => {
                 Cancel
               </ButtonEDU>
               <ButtonEDU actionType="update" htmlType="submit">
-                Update
+                {updateProcessing ? (
+                  <Spinner label={"Updating..."} />
+                ) : (
+                  "Update"
+                )}
               </ButtonEDU>
             </div>
           </Form>

@@ -4,55 +4,77 @@ import {
   ConfigProvider,
   Modal,
   Form,
-  Input,
   Upload,
   message,
   Button,
+  Card,
 } from "antd";
 import { CloudUploadOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import ButtonEDU from "../../../components/common/ButtonEDU";
-import blog from "../../../assets/blog.png";
 import { FiEdit2 } from "react-icons/fi";
-import { RiDeleteBin6Line } from "react-icons/ri";
 import GetPageName from "../../../components/common/GetPageName";
+import {
+  useGetLogoQuery,
+  useUploadLogoMutation,
+} from "../../../redux/apiSlices/logoApi";
+import { getImageUrl } from "../../../components/common/ImageUrl";
 
 function Logo() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm();
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [editingKey, setEditingKey] = useState(null);
-  const [tableData, setTableData] = useState([
-    { key: "1", name: "blog", serial: 1, sliderimg: blog },
-  ]);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingRecord, setDeletingRecord] = useState(null);
+
+  const { data: getLogo, isLoading } = useGetLogoQuery();
+  const [updateLogo] = useUploadLogoMutation();
+
+  const tableData = getLogo?.data?.logo
+    ? [
+        {
+          key: 1,
+          serial: 1,
+          sliderimg: getImageUrl(getLogo.data.logo),
+        },
+      ]
+    : [];
 
   const handleCancel = () => {
     setIsModalOpen(false);
     form.resetFields();
     setUploadedImage(null);
+    setImageFile(null);
     setEditingKey(null);
   };
 
-  const handleFormSubmit = (values) => {
-    if (!uploadedImage && !isEditing) {
+  const handleFormSubmit = async () => {
+    // If editing and no new image was selected, skip API call
+    if (isEditing && !imageFile) {
+      message.info("No changes made to the logo.");
+      handleCancel();
+      return;
+    }
+
+    // If adding new (not editing) and no image selected
+    if (!imageFile) {
       message.error("Please upload an image!");
       return;
     }
 
-    if (isEditing) {
-      const updatedData = tableData.map((item) =>
-        item.key === editingKey
-          ? {
-              ...item,
-              name: values.name,
-              sliderimg: uploadedImage || item.sliderimg,
-            }
-          : item
-      );
-      setTableData(updatedData);
-      message.success("Logo updated successfully!");
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    try {
+      const res = await updateLogo(formData).unwrap();
+      if (res?.success) {
+        message.success("Logo updated successfully");
+      } else {
+        message.error("Failed to update logo");
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      message.error("An error occurred during logo update");
     }
 
     handleCancel();
@@ -63,14 +85,22 @@ function Logo() {
     if (!file) return;
 
     const isImage = file.type.startsWith("image/");
+    const isLt10M = file.size / 1024 / 1024 < 10;
+
     if (!isImage) {
       message.error("You can only upload image files!");
+      return;
+    }
+
+    if (!isLt10M) {
+      message.error("Image must be smaller than 10MB!");
       return;
     }
 
     const reader = new FileReader();
     reader.onload = () => {
       setUploadedImage(reader.result);
+      setImageFile(file);
     };
     reader.readAsDataURL(file);
   };
@@ -79,62 +109,45 @@ function Logo() {
     setIsEditing(true);
     setEditingKey(record.key);
     setUploadedImage(record.sliderimg);
-    form.setFieldsValue({ name: record.name });
     setIsModalOpen(true);
-  };
-
-  const handleDelete = (key, name) => {
-    setDeletingRecord({ key, name });
-    setIsDeleteModalOpen(true);
-  };
-
-  const onConfirmDelete = () => {
-    setTableData(tableData.filter((item) => item.key !== deletingRecord.key));
-    message.success("Logo deleted successfully!");
-    setIsDeleteModalOpen(false);
-  };
-
-  const onCancelDelete = () => {
-    message.info("Delete action canceled.");
-    setIsDeleteModalOpen(false);
   };
 
   const columns = [
     {
-      title: "Sl",
+      title: <div className="text-center">Sl</div>,
       dataIndex: "serial",
       key: "serial",
+      align: "center",
       render: (serial) => (
-        <p className=" text-black text-[16px]">
-          {serial < 10 ? "0" + serial : serial}
-        </p>
+        <div className="text-center">
+          <p className="text-black text-[16px]">
+            {serial < 10 ? "0" + serial : serial}
+          </p>
+        </div>
       ),
     },
     {
-      title: "Logo Image",
+      title: <div className="text-center">Logo Image</div>,
       dataIndex: "sliderimg",
       key: "sliderimg",
-      render: (sliderimg) => <img width={60} src={sliderimg} alt="logo" />,
+      align: "center",
+      render: (sliderimg) => (
+        <div className="flex justify-center">
+          <img width={100} src={sliderimg} alt="logo" className="rounded-lg" />
+        </div>
+      ),
     },
     {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Actions",
+      title: <div className="text-center">Actions</div>,
       key: "actions",
+      align: "center",
       render: (_, record) => (
-        <div className="flex gap-4">
-          <FiEdit2
-            style={{ fontSize: 24 }}
-            className="text-black hover:text-blue-500 cursor-pointer"
+        <div className="flex justify-center">
+          <Button
+            type="text"
+            icon={<FiEdit2 style={{ fontSize: 18 }} />}
             onClick={() => handleEdit(record)}
-          />
-          <RiDeleteBin6Line
-            style={{ fontSize: 24 }}
-            className="text-black hover:text-red-500 cursor-pointer"
-            onClick={() => handleDelete(record.key, record.name)}
+            className="text-gray-600 hover:text-blue-500"
           />
         </div>
       ),
@@ -156,87 +169,80 @@ function Logo() {
             labelFontSize: 16,
           },
           Button: {
-            defaultHoverBg: "#18a0fb ",
+            defaultHoverBg: "#18a0fb",
             defaultHoverColor: "white",
-            defaultHoverBorderColor: "#18a0fb ",
+            defaultHoverBorderColor: "#18a0fb",
           },
         },
       }}
     >
-      <div className=" py-5">
-        <div className="flex justify-between items-center py-5">
+      <div className="py-5">
+        <div className="flex justify-between items-center mb-5">
           <h1 className="text-[20px] font-medium">{GetPageName()}</h1>
         </div>
 
-        <Table columns={columns} dataSource={tableData} pagination={false} />
+        <Card className="shadow-sm">
+          <Table
+            columns={columns}
+            dataSource={tableData}
+            pagination={false}
+            bordered={false}
+            className="custom-table"
+            loading={isLoading}
+          />
+        </Card>
 
-        {/* Delete Confirmation Modal */}
-        <Modal
-          title="Delete Confirmation"
-          visible={isDeleteModalOpen}
-          onCancel={onCancelDelete}
-          footer={null}
-          centered
-        >
-          <div className="flex flex-col justify-between gap-5">
-            <div className="flex justify-center">
-              Are you sure you want to delete{" "}
-              <span className="font-bold ml-1">{deletingRecord?.name}</span>?
-            </div>
-            <div className="flex justify-center gap-4">
-              <ButtonEDU actionType="cancel" onClick={onCancelDelete}>
-                Cancel
-              </ButtonEDU>
-              <ButtonEDU actionType="delete" onClick={onConfirmDelete}>
-                Delete
-              </ButtonEDU>
-            </div>
-          </div>
-        </Modal>
-
-        {/* Modal Form for Editing Only */}
         <Modal
           title="Edit Logo"
           open={isModalOpen}
           onCancel={handleCancel}
           centered
           footer={null}
+          width={600}
         >
           <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
-            <Form.Item
-              label="Name"
-              name="name"
-              rules={[{ required: true, message: "Please enter the name!" }]}
-            >
-              <Input placeholder="Enter Logo name" className="h-12" />
-            </Form.Item>
+            <div className="flex flex-col items-center">
+              <Form.Item label="Logo Image" className="w-full">
+                {uploadedImage ? (
+                  <div className="relative flex justify-center">
+                    <img
+                      src={uploadedImage}
+                      alt="Uploaded"
+                      className="max-w-full h-auto rounded-lg"
+                      style={{ maxHeight: "200px" }}
+                    />
+                    <CloseCircleOutlined
+                      className="absolute top-0 right-0 text-red-500 cursor-pointer bg-white rounded-full p-1 shadow"
+                      onClick={() => {
+                        setUploadedImage(null);
+                        setImageFile(null);
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <Upload
+                    name="image"
+                    listType="picture-card"
+                    showUploadList={false}
+                    onChange={handleImageUpload}
+                    className="flex justify-center w-full"
+                  >
+                    <div className="flex flex-col items-center p-4">
+                      <CloudUploadOutlined style={{ fontSize: 32 }} />
+                      <div className="mt-2">Click to upload</div>
+                      <div className="text-gray-500 text-sm">
+                        PNG, JPG (Max 10MB)
+                      </div>
+                    </div>
+                  </Upload>
+                )}
+              </Form.Item>
 
-            <Form.Item label="Upload Image">
-              {uploadedImage ? (
-                <div className="relative">
-                  <img src={uploadedImage} alt="Uploaded" width={100} />
-                  <CloseCircleOutlined
-                    className="absolute top-0 right-0 text-red-500 cursor-pointer"
-                    onClick={() => setUploadedImage(null)}
-                  />
-                </div>
-              ) : (
-                <Upload
-                  name="image"
-                  listType="picture-card"
-                  showUploadList={false}
-                  onChange={handleImageUpload}
-                >
-                  <button style={{ border: 0, background: "none" }}>
-                    <CloudUploadOutlined style={{ fontSize: 24 }} />
-                    <div>Upload</div>
-                  </button>
-                </Upload>
-              )}
-            </Form.Item>
-
-            <div className="flex justify-end">
-              <ButtonEDU actionType="save">Save</ButtonEDU>
+              <div className="w-full mt-4">
+                <ButtonEDU actionType="save" className="w-full">
+                  Update Logo
+                </ButtonEDU>
+              </div>
             </div>
           </Form>
         </Modal>
