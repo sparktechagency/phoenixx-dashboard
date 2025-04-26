@@ -9,6 +9,7 @@ import { RiSettings5Line, RiShutDownLine } from "react-icons/ri";
 import { useGetProfileQuery } from "../../redux/apiSlices/profileApi";
 import { getImageUrl } from "../../components/common/ImageUrl";
 import { jwtDecode } from "jwt-decode";
+import Online from "../../components/common/Online";
 
 // ✅ Decode JWT outside useEffect, no JSON.parse needed
 let decodedToken = null;
@@ -231,6 +232,7 @@ const Header = ({ toggleSidebar }) => {
         </div>
 
         <Flex align="center" gap={30} justify="flex-end" className="w-full">
+          <Online />
           <Popover
             content={
               <NotificationPopover

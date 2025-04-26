@@ -151,15 +151,6 @@ function Report() {
     onChange: setSelectedRowKeys,
   };
 
-  const handleDeleteSelected = () => {
-    const updatedData = userData.filter(
-      (user) => !selectedRowKeys.includes(user.key)
-    );
-    setUserData(updatedData);
-    setFilteredData(updatedData);
-    setSelectedRowKeys([]);
-  };
-
   const handleViewDetails = (record) => {
     setSelectedRecord(record);
     setIsModalOpen(true);
@@ -262,20 +253,10 @@ function Report() {
             placeholder="Search Reports"
             className="h-9 w-64"
           />
-          {selectedRowKeys.length > 0 && (
-            <Button
-              icon={<RiDeleteBin6Line />}
-              onClick={handleDeleteSelected}
-              className="bg-smart hover:bg-smart text-white border-none h-9"
-            >
-              Delete Selected
-            </Button>
-          )}
         </div>
       </div>
 
       <Table
-        rowSelection={rowSelection}
         columns={columns(handleViewDetails, handleDeleteRow, showWarningModal)}
         dataSource={filteredData}
         size="middle"

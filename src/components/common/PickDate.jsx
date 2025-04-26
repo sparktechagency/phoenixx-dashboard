@@ -20,9 +20,11 @@ function PickDate({ onChange, defaultValue }) {
       onChange={handleChange}
       picker="year"
       defaultValue={defaultValue}
-      className="border-2 h-8 w-28 py-2 rounded-lg"
+      className={`${
+        !isDateSelected ? "border-1" : "border-2"
+      } h-8 w-28 py-2 rounded-lg`}
       style={{
-        borderColor: `${!isDateSelected ? "white" : "#0100fa"}`,
+        borderColor: `${!isDateSelected ? null : "#0100fa"}`,
       }}
       suffixIcon={
         <div

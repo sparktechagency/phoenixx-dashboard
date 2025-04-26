@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import moment from "moment";
 import {
   useGetNotificationQuery,
+  useReadAllNotificationMutation,
   useReadOneNotificationMutation,
 } from "../../../redux/apiSlices/notificationApi";
 import { message, Pagination, Spin } from "antd";
@@ -12,7 +13,7 @@ import Spinner from "../../../components/common/Spinner";
 const Notifications = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [notifications, setNotifications] = useState([]);
-
+  const [readingId, setReadingId] = useState(null);
   const {
     data: getNotification,
     isLoading,
@@ -23,6 +24,9 @@ const Notifications = () => {
 
   const [readOneNotification, { isLoading: readingOne }] =
     useReadOneNotificationMutation();
+
+  const [readAllNotification, { isLoading: readingAll }] =
+    useReadAllNotificationMutation();
 
   // Update notifications data when new data is fetched
   useEffect(() => {
@@ -36,22 +40,35 @@ const Notifications = () => {
 
   const handleMarkAsRead = async (notificationId) => {
     try {
+      setReadingId(notificationId);
       const res = await readOneNotification(notificationId);
       if (res.data?.success) {
         message.success("Marked as read");
-        refetch(); // Refresh the notifications after marking as read
+        refetch();
       } else {
         message.error("Could not mark as read");
       }
     } catch (err) {
       console.log(err);
       message.error("An error occurred");
+    } finally {
+      setReadingId(null);
     }
   };
 
   const handleMarkAllAsRead = async () => {
-    setNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
-    // You can implement an API call to mark all notifications as read if required
+    try {
+      const res = await readAllNotification();
+      if (res.data?.success) {
+        message.success("All notifications marked as read");
+        refetch(); // ✅ Refreshes the list from the server
+      } else {
+        message.error("Failed to mark all as read");
+      }
+    } catch (err) {
+      console.error(err);
+      message.error("An error occurred");
+    }
   };
 
   const getTypeIcon = (type) => {
@@ -142,7 +159,7 @@ const Notifications = () => {
                     className="text-blue-500 border-2 border-transparent rounded-lg active:border-2 border-gray-400 bg-white px-2 py-1 text-xs ml-auto"
                     onClick={() => handleMarkAsRead(notification._id)}
                   >
-                    {readingOne ? (
+                    {readingId === notification._id ? (
                       <Spinner label={"Reading..."} />
                     ) : (
                       "Mark as Read"

@@ -61,6 +61,7 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
 
         formData.append("name", values.subCategoryName);
         formData.append("categoryId", values.parentCategory);
+        formData.append("description", `${values.subCategoryName}`);
         if (imageFile) {
           formData.append("image", imageFile);
         }
