@@ -55,7 +55,7 @@ function AddEditModal({ visible, onCancel, onSubmit, initialValues }) {
             name="interval"
             rules={[{ required: true, message: "Package Interval required" }]}
           >
-            <Input placeholder="Ex: Monthly/Yearly" />
+            <Input placeholder="Ex: day/week/month/year" />
           </Form.Item>
 
           <Form.Item

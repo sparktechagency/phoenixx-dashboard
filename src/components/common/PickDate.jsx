@@ -2,19 +2,28 @@ import React, { useState } from "react";
 import { DatePicker } from "antd";
 import { MdOutlineDateRange } from "react-icons/md";
 
-function PickDate() {
+function PickDate({ onChange, defaultValue }) {
   const [isDateSelected, setIsDateSelected] = useState(false);
 
-  const onChange = (date, dateString) => {
-    console.log(date, dateString);
+  const handleChange = (date, dateString) => {
+    console.log("Date selected:", date, dateString);
     setIsDateSelected(!!dateString);
+
+    // Pass the selected date back to the parent component
+    if (onChange && date) {
+      onChange(date);
+    }
   };
 
   return (
     <DatePicker
-      onChange={onChange}
+      onChange={handleChange}
       picker="year"
-      className="border-1 h-8 w-28 py-2 rounded-lg"
+      defaultValue={defaultValue}
+      className="border-2 h-8 w-28 py-2 rounded-lg"
+      style={{
+        borderColor: `${!isDateSelected ? "white" : "#0100fa"}`,
+      }}
       suffixIcon={
         <div
           className="rounded-full w-6 h-6 p-1 flex items-center justify-center"

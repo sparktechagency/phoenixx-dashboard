@@ -173,7 +173,9 @@ function Package() {
                   </div>
 
                   <p className="text-lg text-gray-700 mb-1">
-                    ${pkg.price}/{pkg.interval}
+                    ${pkg.price}/
+                    {pkg.interval.charAt(0).toUpperCase() +
+                      pkg.interval.substr(1)}
                   </p>
                   <p className="text-gray-500 mb-3">{pkg.description}</p>
 

@@ -38,19 +38,18 @@ export default function RevenueAnalysis() {
   const [isDateSelected, setIsDateSelected] = useState(false);
 
   const onChange = (date, dateString) => {
-    console.log(date, dateString);
+    // console.log(date, dateString);
     setIsDateSelected(!!date); // Update state based on date selection
   };
 
   return (
-    <div className="w-full h-full rounded-lg bg-white">
-      <div className="flex items-center justify-between px-6 my-5 relative">
+    <div className="w-full h-52 rounded-lg bg-white">
+      <div className="flex items-center justify-between px-6 my-3 relative">
         <h1 className="text-2xl font-semibold">Total Revenue</h1>
-
         <PickDate />
       </div>
 
-      <ResponsiveContainer width="100%" height={205}>
+      <ResponsiveContainer width="100%" height={190}>
         <AreaChart
           data={data}
           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}

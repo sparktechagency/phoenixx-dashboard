@@ -13,9 +13,9 @@ const dashboardApi = api.injectEndpoints({
       invalidatesTags: ["Dashboard"],
     }),
     getTotalusers: builder.query({
-      query: () => {
+      query: (year) => {
         return {
-          url: `/dashboard/monthly-users`,
+          url: `/dashboard/monthly-users?year=${year}`,
           method: "GET",
         };
       },

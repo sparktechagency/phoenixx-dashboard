@@ -5,9 +5,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { TbTags } from "react-icons/tb";
 import { SiAntdesign } from "react-icons/si";
-import { HiOutlineUserGroup, HiUsers } from "react-icons/hi";
+import { HiOutlineUserGroup } from "react-icons/hi";
 import { RxDashboard } from "react-icons/rx";
-import { PiWallet } from "react-icons/pi";
 import { BsCashCoin } from "react-icons/bs";
 import { FiLogOut } from "react-icons/fi";
 import { RiContactsBook3Line } from "react-icons/ri";
@@ -85,7 +84,7 @@ const Sidebar = ({ isCollapsed }) => {
     },
     {
       key: "/transaction",
-      icon: <BsCashCoin size={25} />,
+      icon: <BsCashCoin size={20} />,
       label: isCollapsed ? (
         <Link to="/transaction">Transaction</Link>
       ) : (
@@ -132,15 +131,7 @@ const Sidebar = ({ isCollapsed }) => {
             <Link to="/announcement">Announcement</Link>
           ),
         },
-        // {
-        //   key: "/category-list",
-        //   icon: <TbCategory2 size={24} />,
-        //   label: (
-        //     <Link to="/category-list" className="text-white hover:text-white">
-        //       Category
-        //     </Link>
-        //   ),
-        // },
+
         {
           key: "/logo",
           icon: <SiAntdesign size={24} />,
