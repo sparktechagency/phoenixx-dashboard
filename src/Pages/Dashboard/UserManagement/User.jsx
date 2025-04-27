@@ -8,13 +8,14 @@ import UserEditModal from "./UserEditModal";
 import { FaBan, FaCheck, FaTags } from "react-icons/fa";
 import { FcApproval } from "react-icons/fc";
 import { TbLockSquareRoundedFilled } from "react-icons/tb";
-
+import { BsTrash } from "react-icons/bs";
 import { getImageUrl } from "../../../components/common/ImageUrl";
 import Loading from "../../../components/common/Loading";
 import {
   useGetUsersQuery,
   useUpdateUsersMutation,
 } from "../../../redux/apiSlices/usersApi";
+import { RiDeleteBin6Line } from "react-icons/ri";
 function User() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -112,17 +113,10 @@ function User() {
 
   const columns = [
     {
-      title: "User ID",
-      dataIndex: "userID",
-      key: "userID",
-      width: "16.66%",
-      ellipsis: true,
-    },
-    {
       title: "User Name",
       dataIndex: "userName",
       key: "userName",
-      width: "16.66%",
+      width: "30.66%",
       render: (text, record) => (
         <div className="flex items-center gap-2.5 text-black">
           <div className="border rounded-full">
@@ -157,7 +151,7 @@ function User() {
       title: "Total Post",
       dataIndex: "totalPost",
       key: "totalPost",
-      width: "16.66%",
+      width: "20.66%",
       align: "center",
     },
     {
@@ -179,22 +173,37 @@ function User() {
         </span>
       ),
     },
+    // {
+    //   title: "Action",
+    //   key: "action",
+
+    //   render: (text, record) => (
+    //     <Tooltip title={record.blocked ? "Remove Ban" : "Ban"}>
+    //       {record.blocked ? (
+    //         <FaCheck
+    //           className="text-green-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
+    //           onClick={() => toggleBlock(record)}
+    //         />
+    //       ) : (
+    //         <FaBan
+    //           className="text-gray-500 hover:text-red-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
+    //           onClick={() => toggleBlock(record)}
+    //         />
+    //       )}
+    //     </Tooltip>
+    //   ),
+    // },
+
     {
       title: "Action",
       key: "action",
+
       render: (text, record) => (
-        <Tooltip title={record.blocked ? "Remove Ban" : "Ban"}>
-          {record.blocked ? (
-            <FaCheck
-              className="text-green-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
-              onClick={() => toggleBlock(record)}
-            />
-          ) : (
-            <FaBan
-              className="text-gray-500 hover:text-red-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
-              onClick={() => toggleBlock(record)}
-            />
-          )}
+        <Tooltip title={"Delete User"}>
+          <BsTrash
+            className="text-gray-500 hover:text-red-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
+            onClick={() => toggleBlock(record)}
+          />
         </Tooltip>
       ),
     },
@@ -213,12 +222,6 @@ function User() {
             className="h-[47px] gap-2 border"
             allowClear
           />
-          <Button
-            icon={<LuDownload size={20} />}
-            className="bg-smart hover:bg-smart text-white border-none h-9"
-          >
-            Export
-          </Button>
         </div>
       </div>
 

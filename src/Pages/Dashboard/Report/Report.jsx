@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Table,
-  Button,
-  DatePicker,
-  Input,
-  Tooltip,
-  message,
-  Modal,
-  Form,
-} from "antd";
+import { Table, Button, Input, Tooltip, message, Modal, Form } from "antd";
 import { FaSortAmountDown } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { IoEye } from "react-icons/io5";
@@ -246,7 +237,6 @@ function Report() {
             Sort by Date
           </Button>
 
-          <DatePicker picker="month" className="h-9" />
           <Input
             value={searchText}
             onChange={(e) => handleSearch(e.target.value)}

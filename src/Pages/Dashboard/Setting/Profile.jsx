@@ -17,6 +17,8 @@ function Profile() {
 
   const user = getProfile?.data;
 
+  console.log("--", user);
+
   if (!user) {
     return (
       <div className="text-center p-4 text-gray-600">Loading profile...</div>
@@ -59,7 +61,9 @@ function Profile() {
             </Upload>
           )}
         </div>
-        <h3 className="text-black text-xl mt-3">{user?.name || "Unnamed"}</h3>
+        <h3 className="text-black text-xl mt-3">
+          {user?.name || user?.userName || "John Doe"}
+        </h3>
       </div>
       <div className="w-full flex justify-end">
         <Button
@@ -102,7 +106,7 @@ const ProfileDetails = ({
   useEffect(() => {
     if (user) {
       form.setFieldsValue({
-        name: user?.name || "John Doe",
+        name: user?.name || user?.userName || "John Doe",
         email: user?.email || "johndoe@example.com",
         phone: user?.contact || "+1234567890",
         role: user?.role || "Admin",

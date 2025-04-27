@@ -184,7 +184,9 @@ const Header = ({ toggleSidebar }) => {
   const userMenuContent = (
     <div>
       <div className="mr-4 flex gap-2.5 font-semibold hover:text-black cursor-pointer">
-        {`${getProfile?.data?.name} `}
+        {`${
+          getProfile?.data?.name || getProfile?.data?.userName || "John Doe"
+        } `}
       </div>
       <p>{`${getProfile?.data?.role} `}</p>
       <Link
