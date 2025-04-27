@@ -183,25 +183,19 @@ function User() {
       title: "Action",
       key: "action",
       render: (text, record) => (
-        <motion.div
-          initial={{ x: 200, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          <Tooltip title={record.blocked ? "Remove Ban" : "Ban"}>
-            {record.blocked ? (
-              <FaCheck
-                className="text-green-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
-                onClick={() => toggleBlock(record)}
-              />
-            ) : (
-              <FaBan
-                className="text-gray-500 hover:text-red-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
-                onClick={() => toggleBlock(record)}
-              />
-            )}
-          </Tooltip>
-        </motion.div>
+        <Tooltip title={record.blocked ? "Remove Ban" : "Ban"}>
+          {record.blocked ? (
+            <FaCheck
+              className="text-green-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
+              onClick={() => toggleBlock(record)}
+            />
+          ) : (
+            <FaBan
+              className="text-gray-500 hover:text-red-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
+              onClick={() => toggleBlock(record)}
+            />
+          )}
+        </Tooltip>
       ),
     },
   ];

@@ -20,7 +20,11 @@ function Online() {
 
   return (
     <div>
-      <Tooltip title={isOnline ? "Internet Secured" : "No Internet Connection"}>
+      <Tooltip
+        placement="bottom"
+        arrow={false}
+        title={isOnline ? "Internet Secured" : "No Internet Connection"}
+      >
         <IoPlanet
           className={`${isOnline ? "text-green-600" : "text-red-600"}`}
         />
