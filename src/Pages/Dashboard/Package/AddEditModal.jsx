@@ -46,7 +46,20 @@ function AddEditModal({ visible, onCancel, onSubmit, initialValues }) {
           <Form.Item
             label="Package Name"
             name="name"
-            rules={[{ required: true, message: "Package name is required" }]}
+            rules={[
+              {
+                required: true,
+                message: "Package name is required",
+              },
+              {
+                min: 3,
+                message: "Minimum 3 character is required",
+              },
+              {
+                max: 20,
+                message: "Maximum 20 characters allowed",
+              },
+            ]}
           >
             <Input placeholder="Enter package name" />
           </Form.Item>
@@ -86,15 +99,15 @@ function AddEditModal({ visible, onCancel, onSubmit, initialValues }) {
           </Form.Item>
         </div>
         <div className="w-full ">
-          <Form.Item label="Status" name="status">
+          {/* <Form.Item label="Status" name="status">
             <Radio.Group>
               <Radio value="active">Active</Radio>
               <Radio value="inactive">Inactive</Radio>
             </Radio.Group>
-          </Form.Item>
+          </Form.Item> */}
 
           <div
-            className="h-52 border rounded-md overflow-auto [&::-webkit-scrollbar]:w-1
+            className="h-[17rem] border rounded-md overflow-auto [&::-webkit-scrollbar]:w-1
   [&::-webkit-scrollbar-track]:rounded-full
   [&::-webkit-scrollbar-track]:bg-gray-100
   [&::-webkit-scrollbar-thumb]:rounded-full

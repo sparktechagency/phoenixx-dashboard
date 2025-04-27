@@ -8,13 +8,13 @@ import UserEditModal from "./UserEditModal";
 import { FaBan, FaCheck, FaTags } from "react-icons/fa";
 import { FcApproval } from "react-icons/fc";
 import { TbLockSquareRoundedFilled } from "react-icons/tb";
+
+import { getImageUrl } from "../../../components/common/ImageUrl";
+import Loading from "../../../components/common/Loading";
 import {
   useGetUsersQuery,
   useUpdateUsersMutation,
-} from "../../../redux/apiSlices/UsersApi";
-import { getImageUrl } from "../../../components/common/ImageUrl";
-import Loading from "../../../components/common/Loading";
-
+} from "../../../redux/apiSlices/usersApi";
 function User() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
