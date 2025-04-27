@@ -21,6 +21,7 @@ import { GrAnnounce } from "react-icons/gr";
 import logo from "../../assets/logo.png";
 import { useGetLogoQuery } from "../../redux/apiSlices/logoApi";
 import { getImageUrl } from "../../components/common/ImageUrl";
+import { LiaIdCardSolid } from "react-icons/lia";
 const Sidebar = ({ isCollapsed }) => {
   const location = useLocation();
   const path = location.pathname;
@@ -111,6 +112,12 @@ const Sidebar = ({ isCollapsed }) => {
 
           icon: <MdOutlinePrivacyTip size={24} />,
           label: <Link to="/privacy-policy">Privacy Policy</Link>,
+        },
+        {
+          key: "/about-us",
+
+          icon: <LiaIdCardSolid size={24} />,
+          label: <Link to="/about-us">About Us</Link>,
         },
         {
           key: "/terms-and-conditions",

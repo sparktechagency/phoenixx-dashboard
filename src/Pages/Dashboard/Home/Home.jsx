@@ -32,7 +32,7 @@ export const Card = ({ item }) => {
         )}
       </div>
       <div className="h-[60%] flex items-center justify-end  w-20 ">
-        <TinyChart color={item.color} />
+        <TinyChart color={item.color} data={item.chartData} />
       </div>
     </div>
   );

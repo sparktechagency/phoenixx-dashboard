@@ -1,17 +1,11 @@
 import React from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+import { BarChart, Bar, ResponsiveContainer } from "recharts";
 
 function TinyChart(props) {
   function getRandomPv() {
     return Math.floor(Math.random() * (10000 - 2000) + 2000);
   }
+  console.log(props.data);
 
   const data = generateRandomData();
   function generateRandomData() {
@@ -24,6 +18,10 @@ function TinyChart(props) {
       { name: "Jun", pv: getRandomPv(), amt: 2500 },
       { name: "Jul", pv: getRandomPv(), amt: 2100 },
       { name: "Aug", pv: getRandomPv(), amt: 2600 },
+      { name: "Sep", pv: getRandomPv(), amt: 2600 },
+      { name: "Oct", pv: getRandomPv(), amt: 2600 },
+      { name: "Nov", pv: getRandomPv(), amt: 2600 },
+      { name: "Dec", pv: getRandomPv(), amt: 2600 },
     ];
   }
 

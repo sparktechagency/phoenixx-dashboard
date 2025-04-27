@@ -23,6 +23,7 @@ import Notifications from "../Pages/Dashboard/Notification/Notifications.jsx";
 import CategoryFAQ from "../Pages/Dashboard/FAQ/CategoryFAQ.jsx";
 import ProtectedRoute from "../components/common/ProtectedRoute.jsx";
 import Package from "../Pages/Dashboard/Package/Package.jsx";
+import AboutUs from "../Pages/Dashboard/AboutUs/AboutUs.jsx";
 
 const router = createBrowserRouter([
   {
@@ -90,7 +91,10 @@ const router = createBrowserRouter([
         path: "/terms-and-conditions",
         element: <TermsAndCondition />,
       },
-
+      {
+        path: "/about-us",
+        element: <AboutUs />,
+      },
       {
         path: "/notification",
         element: <Notifications />,
