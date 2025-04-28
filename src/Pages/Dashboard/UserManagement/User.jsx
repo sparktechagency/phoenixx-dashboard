@@ -173,40 +173,40 @@ function User() {
         </span>
       ),
     },
-    // {
-    //   title: "Action",
-    //   key: "action",
-
-    //   render: (text, record) => (
-    //     <Tooltip title={record.blocked ? "Remove Ban" : "Ban"}>
-    //       {record.blocked ? (
-    //         <FaCheck
-    //           className="text-green-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
-    //           onClick={() => toggleBlock(record)}
-    //         />
-    //       ) : (
-    //         <FaBan
-    //           className="text-gray-500 hover:text-red-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
-    //           onClick={() => toggleBlock(record)}
-    //         />
-    //       )}
-    //     </Tooltip>
-    //   ),
-    // },
-
     {
       title: "Action",
       key: "action",
 
       render: (text, record) => (
-        <Tooltip title={"Delete User"}>
-          <BsTrash
-            className="text-gray-500 hover:text-red-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
-            onClick={() => toggleBlock(record)}
-          />
+        <Tooltip title={record.blocked ? "Remove Ban" : "Ban"}>
+          {record.blocked ? (
+            <FaCheck
+              className="text-green-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
+              onClick={() => toggleBlock(record)}
+            />
+          ) : (
+            <FaBan
+              className="text-gray-500 hover:text-red-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
+              onClick={() => toggleBlock(record)}
+            />
+          )}
         </Tooltip>
       ),
     },
+
+    // {
+    //   title: "Action",
+    //   key: "action",
+
+    //   render: (text, record) => (
+    //     <Tooltip title={"Delete User"}>
+    //       <BsTrash
+    //         className="text-gray-500 hover:text-red-500 border rounded-md cursor-pointer w-6 h-6 p-1 active:border-2"
+    //         onClick={() => toggleBlock(record)}
+    //       />
+    //     </Tooltip>
+    //   ),
+    // },
   ];
 
   if (isLoading) return <Loading />;
