@@ -52,7 +52,7 @@ const Header = ({ toggleSidebar }) => {
         }
 
         console.log("🔌 Attempting to connect to socket server...");
-        socketRef.current = io("http://10.0.60.123:5002", {
+        socketRef.current = io("http://168.231.64.178:5002", {
           auth: { token },
           transports: ["websocket"],
           reconnection: true,
