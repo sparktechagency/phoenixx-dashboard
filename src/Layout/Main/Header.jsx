@@ -254,13 +254,15 @@ const Header = ({ toggleSidebar }) => {
           >
             <div className="w-12 h-12 bg-[#cfd4ff] flex items-center justify-center rounded-md relative cursor-pointer">
               <FaRegBell size={30} className="text-smart" />
-              <Badge
-                count={unreadCount}
-                overflowCount={5}
-                size="default"
-                color="red"
-                className="absolute top-2 right-3"
-              />
+              {unreadCount ? (
+                <Badge
+                  count={unreadCount}
+                  overflowCount={5}
+                  size="default"
+                  color="red"
+                  className="absolute top-2 right-3"
+                />
+              ) : null}
             </div>
           </Popover>
 
