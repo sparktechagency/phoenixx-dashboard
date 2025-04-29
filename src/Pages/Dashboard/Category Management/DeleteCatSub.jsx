@@ -108,7 +108,7 @@ const DeleteCatSub = ({ isSelected, initialData = null }) => {
         <Segmented
           options={["Category", "Sub Category"]}
           block
-          vertical
+          vertical={false}
           className="border border-smart mb-4 w-1/2"
           onChange={handleSelected}
           value={selected}
