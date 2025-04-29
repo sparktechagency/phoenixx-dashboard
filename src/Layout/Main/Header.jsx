@@ -38,10 +38,10 @@ const Header = ({ toggleSidebar }) => {
   const { data: getProfile } = useGetProfileQuery();
 
   useEffect(() => {
-    if (!decodedToken) {
-      console.error("No valid decoded token, skipping socket connection.");
-      return;
-    }
+    // if (!decodedToken) {
+    //   console.error("No valid decoded token, skipping socket connection.");
+    //   return;
+    // }
 
     const connectSocket = async () => {
       try {
