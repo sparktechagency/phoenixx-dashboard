@@ -65,7 +65,7 @@ const Home = () => {
     },
   ];
   return (
-    <div className="flex flex-col justify-evenly">
+    <div className="flex flex-col justify-evenly gap-4">
       <div className="flex flex-col flex-wrap items-end gap-5 justify-between w-full bg-transparent rounded-md">
         <div className="flex items-center justify-between flex-wrap lg:flex-nowrap gap-10 w-full">
           {stats.map((item, index) => (
@@ -74,12 +74,12 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="w-full h-[330px] bg-white rounded-lg mt-4 relative flex flex-col justify-evenly">
-        <TotalUserChart />
-      </div>
-      <div className="w-full h-[21rem]  mt-4 flex flex-col justify-evenly bg-transparent rounded-lg">
-        <RevenueAnalysis />
-      </div>
+      {/* <div className="w-full h-[330px] bg-white rounded-lg mt-4 relative flex flex-col justify-evenly"> */}
+      <TotalUserChart />
+      {/* </div> */}
+      {/* <div className="w-full  mt-4 flex flex-col justify-evenly bg-transparent rounded-lg"> */}
+      <RevenueAnalysis />
+      {/* </div> */}
     </div>
   );
 };

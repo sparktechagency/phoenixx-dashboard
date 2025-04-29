@@ -51,7 +51,7 @@ const TotalUserChart = () => {
   };
 
   return (
-    <>
+    <div className="w-full h-[21rem] rounded-lg bg-white">
       <div className="flex items-center justify-between px-6 mt-3 relative">
         <h1 className="text-2xl font-semibold">Total User Chart</h1>
         <div className="flex items-center">
@@ -72,7 +72,7 @@ const TotalUserChart = () => {
             Error loading data
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="80%">
             <BarChart
               data={data}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
@@ -94,7 +94,7 @@ const TotalUserChart = () => {
           </ResponsiveContainer>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

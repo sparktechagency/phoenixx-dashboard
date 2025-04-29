@@ -43,7 +43,7 @@ export default function RevenueAnalysis() {
   };
 
   return (
-    <div className="w-full h-full rounded-lg bg-white">
+    <div className="w-full h-[21rem] rounded-lg bg-white">
       <div className="flex items-center justify-between px-6 my-3 relative">
         <h1 className="text-2xl font-semibold">Total Revenue</h1>
         <PickDate />
