@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Modal, Form, Input, InputNumber, Radio, Button } from "antd";
+import { Modal, Form, Input, InputNumber, Radio, Button, Select } from "antd";
 import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
 
 function AddEditModal({ visible, onCancel, onSubmit, initialValues }) {
@@ -12,15 +12,31 @@ function AddEditModal({ visible, onCancel, onSubmit, initialValues }) {
         form.setFieldsValue(initialValues);
       } else {
         form.resetFields();
-        form.setFieldsValue({ status: "active", features: [""] });
+        form.setFieldsValue({
+          status: "active",
+          features: [""],
+          interval: "month",
+        });
       }
     }
   }, [visible, initialValues, form]);
 
   const handleFinish = (values) => {
+    // Close the modal immediately
+    onCancel();
+
+    // Then submit the values (this will happen in the background)
     onSubmit(values);
     form.resetFields();
   };
+
+  // Define interval options
+  const intervalOptions = [
+    // { value: "day", label: "Day" },
+    // { value: "week", label: "Week" },
+    { value: "month", label: "Month" },
+    { value: "year", label: "Year" },
+  ];
 
   return (
     <Modal
@@ -39,9 +55,7 @@ function AddEditModal({ visible, onCancel, onSubmit, initialValues }) {
         layout="vertical"
         onFinish={handleFinish}
         className="w-full flex gap-10"
-        // Remove initialValues from here as we're handling it in useEffect
       >
-        {/* Rest of your form code remains the same */}
         <div className="w-full">
           <Form.Item
             label="Package Name"
@@ -68,7 +82,7 @@ function AddEditModal({ visible, onCancel, onSubmit, initialValues }) {
             name="interval"
             rules={[{ required: true, message: "Package Interval required" }]}
           >
-            <Input placeholder="Ex: day/week/month/year" />
+            <Select placeholder="Select interval" options={intervalOptions} />
           </Form.Item>
 
           <Form.Item
@@ -99,13 +113,6 @@ function AddEditModal({ visible, onCancel, onSubmit, initialValues }) {
           </Form.Item>
         </div>
         <div className="w-full ">
-          {/* <Form.Item label="Status" name="status">
-            <Radio.Group>
-              <Radio value="active">Active</Radio>
-              <Radio value="inactive">Inactive</Radio>
-            </Radio.Group>
-          </Form.Item> */}
-
           <div
             className="h-[17rem] border rounded-md overflow-auto [&::-webkit-scrollbar]:w-1
   [&::-webkit-scrollbar-track]:rounded-full

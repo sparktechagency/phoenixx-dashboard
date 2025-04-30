@@ -128,7 +128,7 @@ const Notifications = () => {
           <Spin size="large" />
         </div>
       ) : (
-        <div className="flex flex-col gap-2 h-[35rem] my-2 py-2 border rounded-lg overflow-auto">
+        <div className="flex flex-col gap-2 h-[46rem] my-2 p-2 border rounded-lg overflow-auto">
           {notifications && notifications.length > 0 ? (
             notifications.map((notification) => (
               <div

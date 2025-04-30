@@ -25,7 +25,7 @@ function Package() {
     refetch,
   } = useGetPackageQuery();
 
-  const [createPackage] = useCreatePackageMutation();
+  const [createPackage, { isLoading: isCreating }] = useCreatePackageMutation();
   const [updatePackage, { isLoading: isUpdating }] = useUpdatePackageMutation();
   const [deletePackage, { isLoading: isDeleting }] = useDeletePackageMutation();
 
@@ -196,6 +196,7 @@ function Package() {
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
         onSubmit={handleModalSubmit}
+        isLoading={isCreating && isUpdating}
         initialValues={
           editingPackage || {
             name: "",

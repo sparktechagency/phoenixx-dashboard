@@ -127,7 +127,7 @@ function PostList() {
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredData}
-          size="middle"
+          size="small"
           className="text-black"
           pagination={{
             defaultPageSize: 5,

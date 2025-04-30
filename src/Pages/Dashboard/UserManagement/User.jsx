@@ -230,7 +230,7 @@ function User() {
         dataSource={filteredData}
         loading={isLoading}
         rowClassName={() => "text-black"}
-        size="middle"
+        size="small"
         scroll={{ x: true }}
         pagination={{
           current: currentPage,

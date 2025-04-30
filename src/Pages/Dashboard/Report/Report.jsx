@@ -249,7 +249,7 @@ function Report() {
       <Table
         columns={columns(handleViewDetails, handleDeleteRow, showWarningModal)}
         dataSource={filteredData}
-        size="middle"
+        size="small"
         loading={isLoading}
         pagination={{
           current: currentPage,
