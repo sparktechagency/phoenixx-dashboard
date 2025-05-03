@@ -154,7 +154,7 @@ const Notifications = () => {
                     <TbClockHour10 /> {formatTime(notification.createdAt)}
                   </p>
                 </div>
-                {!notification.read && (
+                {!notification.read ? (
                   <button
                     className="text-blue-500 border-2 border-transparent rounded-lg active:border-2 border-gray-400 bg-white px-2 py-1 text-xs ml-auto"
                     onClick={() => handleMarkAsRead(notification._id)}
@@ -165,6 +165,10 @@ const Notifications = () => {
                       "Mark as Read"
                     )}
                   </button>
+                ) : (
+                  <span className="bg-green-200 text-black px-2 mr-12 py-1 rounded text-xs ml-auto">
+                    Read
+                  </span>
                 )}
               </div>
             ))

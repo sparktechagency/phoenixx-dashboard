@@ -28,7 +28,8 @@ function AboutUs() {
     if (getAboutUs) {
       const policyContent = getAboutUs.data || getAboutUs.content || getAboutUs;
       if (policyContent) {
-        setContent(policyContent);
+        // Ensure we're setting a string value
+        setContent(typeof policyContent === "string" ? policyContent : "");
       }
     }
   }, [getAboutUs]);
@@ -87,10 +88,19 @@ function AboutUs() {
     []
   );
 
+  // Handle editor content change
+  const handleEditorChange = (newContent) => {
+    // Ensure we're always setting a string value
+    setContent(newContent || "");
+  };
+
   const handleSave = async () => {
     try {
+      // Ensure content is a valid string before sending to API
+      const safeContent = content || "";
+
       const requestData = {
-        content,
+        content: safeContent,
       };
 
       const response = await createAboutUs(requestData);
@@ -112,6 +122,7 @@ function AboutUs() {
       message.error("Failed to update About Us");
     }
   };
+
   if (isLoadingPolicy) return <Loading />;
   if (isError) return <Error description={"Error Fetching About Us"} />;
   return (
@@ -127,8 +138,8 @@ function AboutUs() {
           <div className="border border-gray-200 rounded-md overflow-hidden">
             <JoditEditor
               ref={editor}
-              value={content}
-              onChange={(newContent) => setContent(newContent)}
+              value={content || ""}
+              onChange={handleEditorChange}
               config={config}
             />
           </div>

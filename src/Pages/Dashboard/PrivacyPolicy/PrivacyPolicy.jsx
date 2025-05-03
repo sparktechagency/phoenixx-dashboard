@@ -32,17 +32,20 @@ function PrivacyPolicy() {
       console.log("Setting policy content to:", policyContent);
 
       if (policyContent) {
-        setContent(policyContent);
+        // Ensure we're setting a string value
+        setContent(typeof policyContent === "string" ? policyContent : "");
       }
     }
   }, [getPrivacyPolicy]);
 
   const handleSave = async () => {
     try {
+      // Ensure content is a valid string before sending to API
+      const safeContent = content || "";
+
       // Format the data according to what your API expects
-      // This might be different based on your actual API requirements
       const requestData = {
-        content: content,
+        content: safeContent,
       };
 
       console.log("Sending data to API:", requestData);
@@ -122,6 +125,12 @@ function PrivacyPolicy() {
     []
   );
 
+  // Handle editor content change
+  const handleEditorChange = (newContent) => {
+    // Ensure we're always setting a string value
+    setContent(newContent || "");
+  };
+
   if (isLoadingPolicy) return <Loading />;
   return (
     <div className="w-full bg-white shadow-md rounded-lg p-6">
@@ -138,18 +147,14 @@ function PrivacyPolicy() {
           <div className="border border-gray-200 rounded-md overflow-hidden">
             <JoditEditor
               ref={editor}
-              value={content}
-              onChange={(newContent) => setContent(newContent)}
+              value={content || ""}
+              onChange={handleEditorChange}
               config={config}
             />
           </div>
 
           <div className="flex justify-end mt-6">
-            <ButtonEDU
-              // className="bg-smart hover:bg-smart/90 transition-colors h-8 text-white text-base px-8 py-2.5 rounded-md flex items-center"
-              onClick={handleSave}
-              disabled={isSaving}
-            >
+            <ButtonEDU onClick={handleSave} disabled={isSaving}>
               {isSaving ? (
                 <>
                   <Spinner size="small" className="mr-2" />

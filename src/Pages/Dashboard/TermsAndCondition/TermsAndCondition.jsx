@@ -31,7 +31,8 @@ function TermsAndCondition() {
         getTermsAndCondition.content ||
         getTermsAndCondition;
       if (policyContent) {
-        setContent(policyContent);
+        // Ensure we're setting a string value
+        setContent(typeof policyContent === "string" ? policyContent : "");
       }
     }
   }, [getTermsAndCondition]);
@@ -90,10 +91,19 @@ function TermsAndCondition() {
     []
   );
 
+  // Handle editor content change
+  const handleEditorChange = (newContent) => {
+    // Ensure we're always setting a string value
+    setContent(newContent || "");
+  };
+
   const handleSave = async () => {
     try {
+      // Ensure content is a valid string before sending to API
+      const safeContent = content || "";
+
       const requestData = {
-        content,
+        content: safeContent,
       };
 
       const response = await createTermsAndCondition(requestData);
@@ -115,6 +125,7 @@ function TermsAndCondition() {
       message.error("Failed to update Terms and Conditions");
     }
   };
+
   if (isLoadingPolicy) return <Loading />;
   if (isError)
     return <Error description={"Error Fetching Terms and Conditions"} />;
@@ -133,8 +144,8 @@ function TermsAndCondition() {
           <div className="border border-gray-200 rounded-md overflow-hidden">
             <JoditEditor
               ref={editor}
-              value={content}
-              onChange={(newContent) => setContent(newContent)}
+              value={content || ""}
+              onChange={handleEditorChange}
               config={config}
             />
           </div>

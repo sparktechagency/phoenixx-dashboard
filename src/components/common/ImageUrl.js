@@ -2,8 +2,8 @@ import { getBaseUrl } from "../../utils/baseUrl";
 
 export const getImageUrl = (path) => {
   // Check if path is undefined, null, or empty
-  const imaapiPath = "http://168.231.64.178:5002";
-  // const imaapiPath = "http://10.0.60.123:5002";
+  // const imaapiPath = "http://168.231.64.178:5002";
+  const imaapiPath = "http://10.0.60.123:5002";
   if (!path) {
     return "https://via.placeholder.com/50"; // Return a fallback image
   }
