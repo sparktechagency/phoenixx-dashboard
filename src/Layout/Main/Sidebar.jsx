@@ -155,7 +155,11 @@ const Sidebar = ({ isCollapsed }) => {
     {
       key: "/logout",
       icon: <FiLogOut size={24} />,
-      label: isCollapsed ? null : <Link onClick={handleLogout}>Logout</Link>,
+      label: isCollapsed ? (
+        <Link onClick={handleLogout}>Logout</Link>
+      ) : (
+        <Link onClick={handleLogout}>Logout</Link>
+      ),
     },
   ];
 

@@ -144,7 +144,7 @@ function PrivacyPolicy() {
         </div>
       ) : (
         <>
-          <div className="border border-gray-200 rounded-md overflow-hidden">
+          <div className="border border-gray-200 rounded-md overflow-hidden ">
             <JoditEditor
               ref={editor}
               value={content || ""}
