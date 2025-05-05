@@ -49,9 +49,9 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     const currentTime = Date.now() / 1000; // Convert to seconds to match JWT exp format
 
     // Calculate and log time remaining before expiration
-    const timeRemainingSeconds = decodedToken.exp - currentTime;
-    const timeRemainingMinutes = Math.floor(timeRemainingSeconds / 60);
-    const remainingSeconds = Math.floor(timeRemainingSeconds % 60);
+    // const timeRemainingSeconds = decodedToken.exp - currentTime;
+    // const timeRemainingMinutes = Math.floor(timeRemainingSeconds / 60);
+    // const remainingSeconds = Math.floor(timeRemainingSeconds % 60);
     // console.log(
     //   `Token expires in: ${timeRemainingMinutes} minutes and ${remainingSeconds} seconds`
     // );
