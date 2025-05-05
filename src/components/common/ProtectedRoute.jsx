@@ -52,9 +52,9 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     const timeRemainingSeconds = decodedToken.exp - currentTime;
     const timeRemainingMinutes = Math.floor(timeRemainingSeconds / 60);
     const remainingSeconds = Math.floor(timeRemainingSeconds % 60);
-    console.log(
-      `Token expires in: ${timeRemainingMinutes} minutes and ${remainingSeconds} seconds`
-    );
+    // console.log(
+    //   `Token expires in: ${timeRemainingMinutes} minutes and ${remainingSeconds} seconds`
+    // );
 
     // Check token expiration - exp is in seconds, Date.now() is in milliseconds
     if (decodedToken.exp < currentTime) {
