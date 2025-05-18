@@ -26,6 +26,7 @@ const Sidebar = ({ isCollapsed }) => {
   const location = useLocation();
   const path = location.pathname;
   const [selectedKey, setSelectedKey] = useState("");
+  const [dashboardLogo, setDashboardLogo] = useState("");
   const [openKeys, setOpenKeys] = useState([]);
   const navigate = useNavigate();
 
@@ -34,8 +35,14 @@ const Sidebar = ({ isCollapsed }) => {
     navigate("/auth/login");
   };
 
+  const getLightLogoUrl = (data) => {
+    if (!data || !Array.isArray(data)) return null;
+    const lightLogo = data.find((ele) => ele.status === "light");
+    return lightLogo ? lightLogo.logo : null;
+  };
   const { data: getLogo, isLoading, isError } = useGetLogoQuery();
 
+  const logoUrl = getLightLogoUrl(getLogo?.data);
   const menuItems = [
     {
       key: "/",
@@ -200,12 +207,9 @@ const Sidebar = ({ isCollapsed }) => {
 
           {!isCollapsed ? (
             // <p className="text-2xl text-smart font-semibold ">Dashboard</p>
-            <img src={getImageUrl(getLogo?.data?.logo || logo)} width={150} />
+            <img src={getImageUrl(logoUrl || logo)} width={150} />
           ) : (
-            <img
-              src={getImageUrl(getLogo?.data?.logo || logo)}
-              className="mt-3"
-            />
+            <img src={getImageUrl(logoUrl || logo)} className="mt-3" />
           )}
           {/* <img src={"qilocoLogo"} /> */}
         </div>
