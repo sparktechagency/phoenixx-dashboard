@@ -1,7 +1,7 @@
 import { getBaseUrl } from "../../utils/baseUrl";
 
 export const getImageUrl = (path) => {
-  const imaapiPath = "http://www.api.mehor.com/";
+  const imaapiPath = "http://api.mehor.com/";
   // const imaapiPath = "http://168.231.64.178:5002";
   // const imaapiPath = "http://10.0.60.126:5000";
   if (!path) {

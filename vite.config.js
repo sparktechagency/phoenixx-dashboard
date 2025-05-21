@@ -6,6 +6,11 @@ export default defineConfig({
   server: {
     host: "168.231.64.178",
     // host: "10.0.60.210",
-    port: 4173,
+    port: 4174,
+  },
+  preview: {
+    host: "168.231.64.178", // or "0.0.0.0" if preferred
+    port: 4174,
+    allowedHosts: ["*"],
   },
 });
