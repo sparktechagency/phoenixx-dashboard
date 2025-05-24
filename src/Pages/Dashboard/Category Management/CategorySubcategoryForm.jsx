@@ -18,10 +18,7 @@ const beforeUpload = (file) => {
   if (!isImage) {
     message.error("Only JPG/PNG/JPEG files are allowed!");
   }
-  const isLt2M = file.size / 1024 / 1024 < 2;
-  if (!isLt2M) {
-    message.error("Image must be smaller than 2MB!");
-  }
+  const isLt2M = file.size / 1024 / 1024;
   return isImage && isLt2M;
 };
 
@@ -33,8 +30,10 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
   const [direction, setDirection] = useState(0);
   const prevIndexRef = useRef(0);
 
-  const [createCategory] = useCreateCategoryMutation();
-  const [createSubCategory] = useCreateSubCategoryMutation();
+  const [createCategory, { isLoading: categoryLoading }] =
+    useCreateCategoryMutation();
+  const [createSubCategory, { isLoading: subCategoryLoading }] =
+    useCreateSubCategoryMutation();
 
   const { data: categoryData } = useCategoryQuery();
   const categories = categoryData?.data?.result || [];
@@ -79,7 +78,8 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
           formData.append("image", imageFile);
         }
 
-        await createCategory(formData).unwrap();
+        const response = await createCategory(formData).unwrap();
+        console.log(response);
         message.success("Category created successfully!");
       }
 
@@ -251,6 +251,7 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
 
               <Form.Item>
                 <Button
+                  loading={subCategoryLoading || categoryLoading}
                   htmlType="submit"
                   className="bg-smart/80 border-none text-white min-w-20 min-h-10 text-xs rounded-lg"
                 >

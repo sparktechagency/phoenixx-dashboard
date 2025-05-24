@@ -1,78 +1,38 @@
-// import { Navigate } from "react-router-dom";
-// import { jwtDecode } from "jwt-decode"; // Correct import
+import { Alert, message } from "antd";
+import { jwtDecode } from "jwt-decode";
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
 
-// const ProtectedRoute = ({ children, requiredRole }) => {
-//   const accessToken = localStorage.getItem("accessToken");
+const PrivateRoute = ({ children }) => {
+  const location = useLocation();
 
-//   if (!accessToken) {
-//     return <Navigate to="/auth/login" replace />;
-//   }
+  const token = localStorage.getItem("accessToken");
 
-//   try {
-//     const decodedToken = jwtDecode(accessToken);
-//     const userRole = decodedToken.role;
-
-//     // Check token expiration
-//     if (decodedToken.exp * 1000 < Date.now()) {
-//       localStorage.removeItem("accessToken");
-//       return <Navigate to="/auth/login" replace />;
-//     }
-
-//     // Check role if required
-//     if (requiredRole && !requiredRole.includes(userRole)) {
-//       return <Navigate to="/unauthorized" replace />;
-//     }
-
-//     return children;
-//   } catch (error) {
-//     console.error("Error decoding token:", error);
-//     localStorage.removeItem("accessToken");
-//     return <Navigate to="/auth/login" replace />;
-//   }
-// };
-
-// export default ProtectedRoute;
-
-import { Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Correct import
-
-const ProtectedRoute = ({ children, requiredRole }) => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  if (!accessToken) {
-    return <Navigate to="/auth/login" replace />;
+  if (!token) {
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
   try {
-    const decodedToken = jwtDecode(accessToken);
-    const userRole = decodedToken.role;
-    const currentTime = Date.now() / 1000; // Convert to seconds to match JWT exp format
+    const decoded = jwtDecode(token);
+    console.log(decoded);
 
-    // Calculate and log time remaining before expiration
-    // const timeRemainingSeconds = decodedToken.exp - currentTime;
-    // const timeRemainingMinutes = Math.floor(timeRemainingSeconds / 60);
-    // const remainingSeconds = Math.floor(timeRemainingSeconds % 60);
-    // console.log(
-    //   `Token expires in: ${timeRemainingMinutes} minutes and ${remainingSeconds} seconds`
-    // );
-
-    // Check token expiration - exp is in seconds, Date.now() is in milliseconds
-    if (decodedToken.exp < currentTime) {
-      localStorage.removeItem("accessToken");
-      return <Navigate to="/auth/login" replace />;
+    const currentTime = Date.now() / 1000; // seconds
+    if (decoded.exp < currentTime) {
+      // token expired
+      localStorage.removeItem("accessToken"); // expired token remove
+      return <Navigate to="/auth/login" state={{ from: location }} replace />;
     }
-
-    // Check role if required
-    if (requiredRole && !requiredRole.includes(userRole)) {
-      return <Navigate to="/unauthorized" replace />;
+    if (decoded.role === "SUPER_ADMIN") {
+      return children;
+    } else if (decoded.role === "USER") {
+      message.error("You have no permission to login");
+      return;
+    } else {
+      return <Navigate to="/auth/login" state={{ from: location }} replace />;
     }
-
-    return children;
   } catch (error) {
-    console.error("Error decoding token:", error);
-    localStorage.removeItem("accessToken");
-    return <Navigate to="/auth/login" replace />;
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 };
 
-export default ProtectedRoute;
+export default PrivateRoute;

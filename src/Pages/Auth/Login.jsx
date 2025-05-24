@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../redux/apiSlices/authApi";
 import Spinner from "../../components/common/Spinner";
+import { jwtDecode } from "jwt-decode";
 // import Cookies from "js-cookie";
 
 const Login = () => {
@@ -12,19 +13,18 @@ const Login = () => {
   const onFinish = async (values) => {
     try {
       const res = await login(values).unwrap();
-
-      // Assuming the response contains a token and user info
-      // const { accessToken, user } = res;
-      console.log("Login response:", res?.data?.accessToken);
-      console.log("Login response:", res);
-
-      localStorage.setItem("accessToken", res?.data?.accessToken);
+      const decoded = jwtDecode(res?.data?.accessToken);
+      if (decoded?.role === "SUPER_ADMIN") {
+        message.success("Login successful!");
+        localStorage.setItem("accessToken", res?.data?.accessToken);
+        navigate("/");
+      } else {
+        message.error("You have not permission this login ");
+      }
 
       // Show success message
-      message.success("Login successful!");
 
       // Navigate to dashboard or desired page
-      navigate("/");
     } catch (error) {
       console.error("Login failed:", error);
       message.error(error);
