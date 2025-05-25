@@ -1,5 +1,5 @@
 import { Checkbox, Form, Input, message } from "antd";
-import React from "react";
+
 import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../redux/apiSlices/authApi";
 import Spinner from "../../components/common/Spinner";
@@ -12,7 +12,12 @@ const Login = () => {
 
   const onFinish = async (values) => {
     try {
-      const res = await login(values).unwrap();
+      const trimmedValues = {
+        ...values,
+        email: values.email.trim(),
+        password: values.password.trim(),
+      };
+      const res = await login(trimmedValues).unwrap();
       const decoded = jwtDecode(res?.data?.accessToken);
       if (decoded?.role === "SUPER_ADMIN") {
         message.success("Login successful!");
