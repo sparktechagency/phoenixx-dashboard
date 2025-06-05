@@ -9,24 +9,39 @@ import { getImageUrl } from "../../../components/common/ImageUrl";
 function CategoryList() {
   const { data: categoryData, isLoading, isError } = useCategoryQuery();
   const { data: subCategoryData } = useGetSubCategoriesQuery();
+  console.log(categoryData);
 
   const onSelect = (selectedKeys, info) => {
     console.log("Selected keys:", selectedKeys);
     console.log("Selected node info:", info);
   };
 
-  // Custom title renderer that includes an image alongside the title text
-  const renderTitle = (title, image) => (
+  // Custom title renderer that shows both light and dark images side by side
+  const renderTitle = (title, lightImage, darkImage) => (
     <div className="flex items-center justify-between border rounded px-2 py-.5">
       <span>{title}</span>
-      {image ? (
-        <img
-          src={getImageUrl(image)}
-          alt={title}
-          className="h-5 w-5 ml-3 object-cover p-1 border rounded"
-        />
-      ) : // <div className="h-5 w-5 ml-3 bg-gray-200 rounded"></div>
-      null}
+      <div className="flex items-center gap-2 ml-3">
+        {lightImage && (
+          <div className="flex flex-col items-center">
+            <span className="text-xs text-gray-500">Light</span>
+            <img
+              src={getImageUrl(lightImage)}
+              alt={`${title} (light)`}
+              className="h-5 w-5 object-cover p-1 border rounded"
+            />
+          </div>
+        )}
+        {darkImage && (
+          <div className="flex flex-col items-center">
+            <span className="text-xs text-gray-500">Dark</span>
+            <img
+              src={getImageUrl(darkImage)}
+              alt={`${title} (dark)`}
+              className="h-5 w-5 object-cover p-1 border rounded bg-gray-800"
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -36,17 +51,18 @@ function CategoryList() {
     return categories.map((catWrapper) => {
       const category = catWrapper.category;
       const catId = category?._id;
-      const catImageUrl = category?.image; // Adjust based on your API response structure
+      const catLightImage = category?.image;
+      const catDarkImage = category?.darkImage;
 
       const children = subCategories
         .filter((sub) => sub?.categoryId === catId)
         .map((sub) => ({
-          title: renderTitle(sub.name, sub?.image), // Render with image
+          title: renderTitle(sub.name, sub?.image, sub?.darkImage),
           key: `sub-${sub?._id}`,
         }));
 
       return {
-        title: renderTitle(category?.name, catImageUrl), // Render with image
+        title: renderTitle(category?.name, catLightImage, catDarkImage),
         key: `cat-${catId}`,
         children,
       };

@@ -17,16 +17,23 @@ const beforeUpload = (file) => {
     file.type === "image/jpg";
   if (!isImage) {
     message.error("Only JPG/PNG/JPEG files are allowed!");
+    return Upload.LIST_IGNORE;
   }
-  const isLt2M = file.size / 1024 / 1024;
-  return isImage && isLt2M;
+  const isLt2M = file.size / 1024 / 1024 < 2;
+  if (!isLt2M) {
+    message.error("Image must be smaller than 2MB!");
+    return Upload.LIST_IGNORE;
+  }
+  return false;
 };
 
 const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
   const [form] = Form.useForm();
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
-  const [fileList, setFileList] = useState([]);
+  const [lightImageFile, setLightImageFile] = useState(null);
+  const [darkImageFile, setDarkImageFile] = useState(null);
+  const [lightFileList, setLightFileList] = useState([]);
+  const [darkFileList, setDarkFileList] = useState([]);
   const [direction, setDirection] = useState(0);
   const prevIndexRef = useRef(0);
 
@@ -39,12 +46,21 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
   const categories = categoryData?.data?.result || [];
   const mainCategories = categories.filter((cat) => !cat.parentCategory);
 
-  const handleImageChange = ({ fileList }) => {
-    setFileList(fileList);
+  const handleLightImageChange = ({ fileList }) => {
+    setLightFileList(fileList);
     if (fileList.length > 0) {
-      setImageFile(fileList[0].originFileObj);
+      setLightImageFile(fileList[0].originFileObj);
     } else {
-      setImageFile(null);
+      setLightImageFile(null);
+    }
+  };
+
+  const handleDarkImageChange = ({ fileList }) => {
+    setDarkFileList(fileList);
+    if (fileList.length > 0) {
+      setDarkImageFile(fileList[0].originFileObj);
+    } else {
+      setDarkImageFile(null);
     }
   };
 
@@ -61,8 +77,11 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
         formData.append("name", values.subCategoryName);
         formData.append("categoryId", values.parentCategory);
         formData.append("description", `${values.subCategoryName}`);
-        if (imageFile) {
-          formData.append("image", imageFile);
+        if (lightImageFile) {
+          formData.append("image", lightImageFile);
+        }
+        if (darkImageFile) {
+          formData.append("darkImage", darkImageFile);
         }
 
         await createSubCategory(formData).unwrap();
@@ -74,8 +93,11 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
         }
 
         formData.append("name", values.categoryName);
-        if (imageFile) {
-          formData.append("image", imageFile);
+        if (lightImageFile) {
+          formData.append("image", lightImageFile);
+        }
+        if (darkImageFile) {
+          formData.append("darkImage", darkImageFile);
         }
 
         const response = await createCategory(formData).unwrap();
@@ -84,8 +106,10 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
       }
 
       form.resetFields();
-      setFileList([]);
-      setImageFile(null);
+      setLightFileList([]);
+      setDarkFileList([]);
+      setLightImageFile(null);
+      setDarkImageFile(null);
     } catch (error) {
       console.error(error);
       message.error(
@@ -225,25 +249,44 @@ const CategorySubcategoryForm = ({ isSelected, initialData = null }) => {
               )}
 
               <Form.Item
-                label="Upload Image"
-                name="image"
+                label="Upload Light Image"
+                name="lightImage"
                 rules={[
                   {
-                    required: !fileList.length,
-                    message: "Please upload an image!",
+                    required: true,
+                    message: "Please upload a light image!",
                   },
                 ]}
               >
                 <Upload
                   listType="picture"
                   beforeUpload={beforeUpload}
-                  fileList={fileList}
+                  fileList={lightFileList}
                   maxCount={1}
                   accept=".png,.jpg,.jpeg"
-                  onChange={handleImageChange}
-                  customRequest={({ onSuccess }) =>
-                    setTimeout(() => onSuccess("ok"), 0)
-                  }
+                  onChange={handleLightImageChange}
+                >
+                  <Button icon={<InboxOutlined />}>Click to Upload</Button>
+                </Upload>
+              </Form.Item>
+
+              <Form.Item
+                label="Upload Dark Image"
+                name="darkImage"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please upload a dark image!",
+                  },
+                ]}
+              >
+                <Upload
+                  listType="picture"
+                  beforeUpload={beforeUpload}
+                  fileList={darkFileList}
+                  maxCount={1}
+                  accept=".png,.jpg,.jpeg"
+                  onChange={handleDarkImageChange}
                 >
                   <Button icon={<InboxOutlined />}>Click to Upload</Button>
                 </Upload>

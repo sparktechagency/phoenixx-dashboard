@@ -30,21 +30,26 @@ const beforeUpload = (file) => {
     file.type === "image/jpg";
   if (!isImage) {
     message.error("Only JPG/PNG/JPEG files are allowed!");
+    return Upload.LIST_IGNORE;
   }
   const isLt2M = file.size / 1024 / 1024 < 2;
   if (!isLt2M) {
     message.error("Image must be smaller than 2MB!");
+    return Upload.LIST_IGNORE;
   }
-  return isImage && isLt2M;
+  return false;
 };
 
 const EditCatSub = ({ isSelected, initialData = null }) => {
   const [form] = Form.useForm();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
-  const [fileList, setFileList] = useState([]);
-  const [existingImage, setExistingImage] = useState(null);
+  const [lightImageFile, setLightImageFile] = useState(null);
+  const [darkImageFile, setDarkImageFile] = useState(null);
+  const [lightFileList, setLightFileList] = useState([]);
+  const [darkFileList, setDarkFileList] = useState([]);
+  const [existingLightImage, setExistingLightImage] = useState(null);
+  const [existingDarkImage, setExistingDarkImage] = useState(null);
   const [selected, setSelected] = useState("Category");
   const [direction, setDirection] = useState(0);
   const prevIndexRef = useRef(0);
@@ -74,12 +79,21 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
     label: sub.name || (sub.subcategory && sub.subcategory.name),
   }));
 
-  const handleImageChange = ({ fileList }) => {
-    setFileList(fileList);
+  const handleLightImageChange = ({ fileList }) => {
+    setLightFileList(fileList);
     if (fileList.length > 0) {
-      setImageFile(fileList[0].originFileObj);
+      setLightImageFile(fileList[0].originFileObj);
     } else {
-      setImageFile(null);
+      setLightImageFile(null);
+    }
+  };
+
+  const handleDarkImageChange = ({ fileList }) => {
+    setDarkFileList(fileList);
+    if (fileList.length > 0) {
+      setDarkImageFile(fileList[0].originFileObj);
+    } else {
+      setDarkImageFile(null);
     }
   };
 
@@ -120,9 +134,15 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
         });
 
         if (selectedCategoryData.category.image) {
-          setExistingImage(selectedCategoryData.category.image);
+          setExistingLightImage(selectedCategoryData.category.image);
         } else {
-          setExistingImage(null);
+          setExistingLightImage(null);
+        }
+
+        if (selectedCategoryData.category.darkImage) {
+          setExistingDarkImage(selectedCategoryData.category.darkImage);
+        } else {
+          setExistingDarkImage(null);
         }
       }
     }
@@ -153,15 +173,26 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
           subCategoryName: name,
         });
 
-        const image =
+        const lightImage =
           selectedSubCategoryData.image ||
           (selectedSubCategoryData.subcategory &&
             selectedSubCategoryData.subcategory.image);
 
-        if (image) {
-          setExistingImage(image);
+        const darkImage =
+          selectedSubCategoryData.darkImage ||
+          (selectedSubCategoryData.subcategory &&
+            selectedSubCategoryData.subcategory.darkImage);
+
+        if (lightImage) {
+          setExistingLightImage(lightImage);
         } else {
-          setExistingImage(null);
+          setExistingLightImage(null);
+        }
+
+        if (darkImage) {
+          setExistingDarkImage(darkImage);
+        } else {
+          setExistingDarkImage(null);
         }
       }
     }
@@ -173,8 +204,11 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
         const categoryData = new FormData();
         categoryData.append("name", values.categoryName);
 
-        if (imageFile) {
-          categoryData.append("image", imageFile);
+        if (lightImageFile) {
+          categoryData.append("image", lightImageFile);
+        }
+        if (darkImageFile) {
+          categoryData.append("darkImage", darkImageFile);
         }
 
         const res = await updateCategory({
@@ -192,8 +226,11 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
         subCategoryData.append("name", values.subCategoryName);
         subCategoryData.append("parentCategory", selectedCategory);
 
-        if (imageFile) {
-          subCategoryData.append("image", imageFile);
+        if (lightImageFile) {
+          subCategoryData.append("image", lightImageFile);
+        }
+        if (darkImageFile) {
+          subCategoryData.append("darkImage", darkImageFile);
         }
 
         const res = await updateSubCategory({
@@ -208,8 +245,10 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
         }
       }
 
-      setFileList([]);
-      setImageFile(null);
+      setLightFileList([]);
+      setDarkFileList([]);
+      setLightImageFile(null);
+      setDarkImageFile(null);
     } catch (error) {
       message.error("Something went wrong!");
       console.error(error);
@@ -227,15 +266,18 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
     form.resetFields();
     setSelectedCategory(null);
     setSelectedSubCategory(null);
-    setExistingImage(null);
-    setFileList([]);
+    setExistingLightImage(null);
+    setExistingDarkImage(null);
+    setLightFileList([]);
+    setDarkFileList([]);
   };
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value);
     if (selected === "Sub Category") {
       setSelectedSubCategory(null);
-      setExistingImage(null);
+      setExistingLightImage(null);
+      setExistingDarkImage(null);
       form.setFieldsValue({
         subCategory: undefined,
         subCategoryName: undefined,
@@ -352,30 +394,58 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
                   </Form.Item>
                 )}
 
-                {existingImage && (
-                  <div className="mb-4">
-                    <p className="mb-2">Current Image:</p>
-                    <img
-                      src={getImageUrl(existingImage)}
-                      alt="Current image"
-                      width={100}
-                      height={100}
-                      className="border rounded"
-                    />
-                  </div>
-                )}
+                <div className="flex gap-4 mb-4">
+                  {existingLightImage && (
+                    <div>
+                      <p className="mb-2">Current Light Image:</p>
+                      <img
+                        src={getImageUrl(existingLightImage)}
+                        alt="Current light image"
+                        width={100}
+                        height={100}
+                        className="border rounded"
+                      />
+                    </div>
+                  )}
+                  {existingDarkImage && (
+                    <div>
+                      <p className="mb-2">Current Dark Image:</p>
+                      <img
+                        src={getImageUrl(existingDarkImage)}
+                        alt="Current dark image"
+                        width={100}
+                        height={100}
+                        className="border rounded"
+                      />
+                    </div>
+                  )}
+                </div>
 
-                <Form.Item label="Upload New Image" name="image">
+                <Form.Item label="Upload New Light Image" name="lightImage">
                   <Upload
                     listType="picture"
                     beforeUpload={beforeUpload}
-                    fileList={fileList}
+                    fileList={lightFileList}
                     maxCount={1}
                     accept=".png,.jpg,.jpeg"
-                    onChange={handleImageChange}
-                    customRequest={({ onSuccess }) =>
-                      setTimeout(() => onSuccess("ok"), 0)
+                    onChange={handleLightImageChange}
+                    disabled={
+                      (selected === "Category" && !selectedCategory) ||
+                      (selected === "Sub Category" && !selectedSubCategory)
                     }
+                  >
+                    <Button icon={<InboxOutlined />}>Click to Upload</Button>
+                  </Upload>
+                </Form.Item>
+
+                <Form.Item label="Upload New Dark Image" name="darkImage">
+                  <Upload
+                    listType="picture"
+                    beforeUpload={beforeUpload}
+                    fileList={darkFileList}
+                    maxCount={1}
+                    accept=".png,.jpg,.jpeg"
+                    onChange={handleDarkImageChange}
                     disabled={
                       (selected === "Category" && !selectedCategory) ||
                       (selected === "Sub Category" && !selectedSubCategory)
