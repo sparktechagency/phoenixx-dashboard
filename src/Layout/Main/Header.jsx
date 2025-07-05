@@ -199,6 +199,9 @@ const Header = ({ toggleSidebar }) => {
       <Link
         to="/auth/login"
         className="flex items-center gap-2 py-1 text-black hover:text-smart"
+        onClick={() => {
+          localStorage.clear();
+        }}
       >
         <RiShutDownLine className="text-red-500 animate-pulse" />
         <span>Log Out</span>
