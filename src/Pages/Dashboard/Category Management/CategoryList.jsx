@@ -18,7 +18,7 @@ function CategoryList() {
 
   // Custom title renderer that shows both light and dark images side by side
   const renderTitle = (title, lightImage, darkImage) => (
-  <div className="flex items-center justify-between border h-10 rounded px-2 py-.5">
+  <div className="flex items-center justify-between border h-10 rounded px-2 py-.5 ">
     <span>{title}</span>
     <div className="flex items-center gap-2 ml-3">
       <Tooltip title="Light mode Image">
@@ -28,7 +28,7 @@ function CategoryList() {
           <img
             src={getImageUrl(lightImage)}
             alt={`${title} (light)`}
-            className="h-8 w-8 object-cover p-.5 border  rounded"
+            className="h-8 w-8 object-cover p-.5 border border-smart  rounded"
           />
         </div>
       )}
@@ -84,7 +84,13 @@ function CategoryList() {
     return <Alert type="error" message="Failed to load categories" />;
 
   return (
-    <div className="w-1/2 mx-auto">
+    <div className="w-1/2 mx-auto border max-h-[80vh] overflow-auto [&::-webkit-scrollbar]:w-0
+  [&::-webkit-scrollbar-track]:rounded-full
+  [&::-webkit-scrollbar-track]:bg-gray-100
+  [&::-webkit-scrollbar-thumb]:rounded-full
+  [&::-webkit-scrollbar-thumb]:bg-gray-300
+  dark:[&::-webkit-scrollbar-track]:bg-neutral-700
+  dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500">
       <Tree
         showLine
         switcherIcon={<DownOutlined />}
