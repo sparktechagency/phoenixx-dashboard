@@ -1,6 +1,6 @@
 import React from "react";
 import { DownOutlined } from "@ant-design/icons";
-import { Tree, Alert } from "antd";
+import { Tree, Alert, Tooltip } from "antd";
 import { useCategoryQuery } from "../../../redux/apiSlices/categoryApi";
 import { useGetSubCategoriesQuery } from "../../../redux/apiSlices/subCategoryApi";
 import Loading from "../../../components/common/Loading";
@@ -18,32 +18,37 @@ function CategoryList() {
 
   // Custom title renderer that shows both light and dark images side by side
   const renderTitle = (title, lightImage, darkImage) => (
-    <div className="flex items-center justify-between border rounded px-2 py-.5">
-      <span>{title}</span>
-      <div className="flex items-center gap-2 ml-3">
-        {lightImage && (
-          <div className="flex flex-col items-center">
-            <span className="text-xs text-gray-500">Light</span>
-            <img
-              src={getImageUrl(lightImage)}
-              alt={`${title} (light)`}
-              className="h-5 w-5 object-cover p-1 border rounded"
-            />
-          </div>
-        )}
-        {darkImage && (
-          <div className="flex flex-col items-center">
-            <span className="text-xs text-gray-500">Dark</span>
-            <img
-              src={getImageUrl(darkImage)}
-              alt={`${title} (dark)`}
-              className="h-5 w-5 object-cover p-1 border rounded bg-gray-800"
-            />
-          </div>
-        )}
-      </div>
+  <div className="flex items-center justify-between border h-10 rounded px-2 py-.5">
+    <span>{title}</span>
+    <div className="flex items-center gap-2 ml-3">
+      <Tooltip title="Light mode Image">
+{lightImage && (
+        <div className="flex flex-col items-center">
+          {/* <span className="text-xs text-gray-500">Light</span> */}
+          <img
+            src={getImageUrl(lightImage)}
+            alt={`${title} (light)`}
+            className="h-8 w-8 object-cover p-.5 border  rounded"
+          />
+        </div>
+      )}
+      </Tooltip>
+      
+      
+      <Tooltip title="Dark mode Image">{darkImage && (
+        <div className="flex flex-col items-center">
+          {/* <span className="text-xs text-gray-500">Dark</span> */}
+          <img
+            src={getImageUrl(darkImage)}
+            alt={`${title} (dark)`}
+            className="h-8 w-8 object-cover p-.5 border border-black rounded"
+          />
+        </div>
+      )}</Tooltip>
+      
     </div>
-  );
+  </div>
+);
 
   const buildTreeData = (categories, subCategories) => {
     if (!Array.isArray(categories)) return [];

@@ -315,9 +315,15 @@ const EditCatSub = ({ isSelected, initialData = null }) => {
             initial="enter"
             animate="center"
             exit="exit"
-            className="w-full"
+            className="w-full "
           >
-            <div className="w-full mt-4">
+            <div className="w-full max-h-[70vh] overflow-auto mt-4   [&::-webkit-scrollbar]:w-0
+  [&::-webkit-scrollbar-track]:rounded-full
+  [&::-webkit-scrollbar-track]:bg-gray-100
+  [&::-webkit-scrollbar-thumb]:rounded-full
+  [&::-webkit-scrollbar-thumb]:bg-gray-300
+  dark:[&::-webkit-scrollbar-track]:bg-neutral-700
+  dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500">
               <Form
                 form={form}
                 name="categoryForm"
