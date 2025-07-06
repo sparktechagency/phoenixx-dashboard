@@ -23,6 +23,7 @@ import CategoryFAQ from "../Pages/Dashboard/FAQ/CategoryFAQ.jsx";
 import ProtectedRoute from "../components/common/ProtectedRoute.jsx";
 import Package from "../Pages/Dashboard/Package/Package.jsx";
 import AboutUs from "../Pages/Dashboard/AboutUs/AboutUs.jsx";
+import Feedback from "../Pages/Dashboard/Feedback/Feedback.jsx";
 
 const router = createBrowserRouter([
   {
@@ -76,6 +77,10 @@ const router = createBrowserRouter([
       {
         path: "/contact",
         element: <Contact />,
+      },
+      {
+        path: "/feedback",
+        element: <Feedback />,
       },
 
       {

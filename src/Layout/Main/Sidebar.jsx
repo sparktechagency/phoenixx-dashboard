@@ -10,6 +10,7 @@ import { RxDashboard } from "react-icons/rx";
 import { BsCashCoin } from "react-icons/bs";
 import { FiLogOut } from "react-icons/fi";
 import { RiContactsBook3Line } from "react-icons/ri";
+import { VscFeedback } from "react-icons/vsc";
 import {
   MdCategory,
   MdOutlineCategory,
@@ -106,6 +107,15 @@ const Sidebar = ({ isCollapsed }) => {
         <Link to="/reported-issues">Report</Link>
       ) : (
         <Link to="/reported-issues">Report</Link>
+      ),
+    },
+    {
+      key: "/feedback",
+      icon: <VscFeedback size={25} />,
+      label: isCollapsed ? (
+        <Link to="/feedback">Feedback</Link>
+      ) : (
+        <Link to="/feedback">Feedback</Link>
       ),
     },
 
