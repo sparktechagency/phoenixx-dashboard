@@ -60,7 +60,7 @@ const AdminList = () => {
   const handleCancelAdd = () => {
     setIsAddModalOpen(false);
     addFormRef.current?.resetFields();
-    message.info("Admin addition cancelled.");
+    
   };
 
   const handleAddAdmin = async (values) => {
@@ -72,37 +72,45 @@ const AdminList = () => {
         );
         return;
       }
-
+  
       const res = await createAdmin(values).unwrap();
       console.log("Admin created successfully:", res);
       message.success("Admin created successfully!");
-
+  
       const cleanEmail = values.email.replace(/\.com.*/i, ".com");
-
+  
       const newAdmin = {
         key: admins.length + 1,
         ...values,
         email: cleanEmail,
         creationdate: new Date().toLocaleDateString(),
       };
-
+  
       const updated = [...admins, newAdmin];
       setAdmins(updated);
       setFilteredData(updated);
       setIsAddModalOpen(false);
       addFormRef.current?.resetFields();
     } catch (err) {
-      if (err.status === 400) {
-        message.error(
-          `Validation Error: ${err.data?.message || "Please check the inputs"}`
-        );
+      console.error("Error creating admin:", err);
+      
+      // Handle validation errors with detailed messages
+      if (err.status === 400 && err.data?.errorMessages) {
+        // Display specific field validation errors
+        const errorMessages = err.data.errorMessages.map(error => error.message).join(', ');
+        message.error(`Validation Error: ${errorMessages}`);
+      } else if (err.status === 400 && err.data?.message) {
+        // Display general validation error
+        message.error(`Validation Error: ${err.data.message}`);
+      } else if (err.data?.message) {
+        // Display any other API error message
+        message.error(err.data.message);
       } else {
+        // Fallback error message
         message.error("Something went wrong, please try again.");
       }
-      console.error("Error creating admin:", err);
     }
   };
-
   const showDeleteModal = (record) => {
     setSelectedAdmin(record);
     setIsDeleteModalOpen(true);
