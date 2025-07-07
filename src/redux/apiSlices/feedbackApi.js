@@ -3,9 +3,9 @@ import { api } from "../api/baseApi";
 const feedBackApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getFeedBack: builder.query({
-      query: () => {
+      query: (page, limit) => {
         return {
-          url: "/feedbacks",
+          url: `/feedbacks?page=${page}&limit=${limit}`,
           method: "GET",
         };
       },
