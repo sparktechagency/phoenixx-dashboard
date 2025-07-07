@@ -1,132 +1,118 @@
 import React, { useState } from 'react';
-import { Calendar, Search, MessageCircle } from 'lucide-react';
-import { DatePicker } from 'antd';
+import { Calendar, MessageCircle } from 'lucide-react';
 import { useGetFeedBackQuery } from '../../../redux/apiSlices/feedbackApi';
 import { useGetUsersQuery } from '../../../redux/apiSlices/usersApi';
 
-
 function Feedback() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
   const { data: feedbackData, isLoading } = useGetFeedBackQuery();
   const { data: usersData } = useGetUsersQuery();
 
-  // Extract feedbacks from API response
+  // Extract feedbacks and users from API response
   const feedbacks = feedbackData?.data?.data || [];
   const totalFeedback = feedbackData?.data?.meta?.total || 0;
   const users = usersData?.data?.data || [];
 
-  // Filter by search term (search in likedAspects, areasForImprovement, featureSuggestions, additionalFeedback)
-  const filteredFeedback = feedbacks.filter(feedback => {
-    const search = searchTerm.toLowerCase();
-    return (
-      feedback.likedAspects?.toLowerCase().includes(search) ||
-      feedback.areasForImprovement?.toLowerCase().includes(search) ||
-      feedback.featureSuggestions?.toLowerCase().includes(search) ||
-      feedback.additionalFeedback?.toLowerCase().includes(search)
-    );
-  });
+  // Display all feedbacks (no search filtering)
+  const filteredFeedback = feedbacks;
 
-  const handleMonthChange = (date, dateString) => {
-    console.log('Selected month:', dateString);
-    console.log('Selected date object:', date);
+  const handleMonthChange = (e) => {
+    setSelectedMonth(e.target.value);
+    console.log('Selected month:', e.target.value);
   };
 
   return (
-    <div className="max-h-screen ">
-      <div className="max-w-7xl mx-auto">
+    <div className="h-screen overflow-hidden">
+      <div className=" mx-auto px-4 h-full flex flex-col">
         {/* Header */}
-        <div className="text-center mb-2 pt-4">
+        <div className="text-center max-h-20 mb-4 pt-2 flex-shrink-0">
           <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
             Customer Feedback
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-sm text-gray-600 max-w-2xl mx-auto">
             See what our customers are saying about their experience
           </p>
         </div>
 
-        {/* Search & Month Picker */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-500 rounded-full">
-                <MessageCircle className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-800">{totalFeedback}</p>
-                <p className="text-gray-600">Total Feedbacks</p>
-              </div>
-            </div>
-            <DatePicker 
-              picker='month' 
-              className='rounded-lg h-10'
-              onChange={handleMonthChange}
-            />
-          </div>
-        </div>
+        
 
         {/* Feedback List */}
-        <div className="space-y-6 max-h-[65vh] rounded-lg overflow-auto">
-          {isLoading ? (
-            <div className="text-center py-12 text-gray-500">Loading feedbacks...</div>
-          ) : filteredFeedback.length > 0 ? (
-            filteredFeedback.map((feedback) => (
-              <div key={feedback._id} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className="flex items-start gap-4">
-                  {/* Avatar Placeholder */}
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                    {
-                      (() => {
-                        const user = users.find(u => u._id === feedback.user);
-                        if (user && user?.userName) {
-                          return user?.userName.slice(0, 2).toUpperCase();
-                        }
-                        return 'UN';
-                      })()
-                    }
-                  </div>
-                  {/* Content */}
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <h3 className="font-semibold text-gray-800">
-                          {
-                            (users.find(u => u._id === feedback.user)?.userName) || 'Unknown User'
-                          }
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {
-                            (users.find(u => u._id === feedback.user)?.email) || 'unknown@gmail.com'
-                          }
-                        </p>
+        <div className="flex-1 overflow-hidden">
+          <div
+            className="h-[78vh] overflow-y-auto p-2 bg-gray-50 rounded-xl"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#cbd5e1 #f1f5f9'
+            }}
+          >
+            {isLoading ? (
+              <div className="text-center py-12 text-gray-500">Loading feedbacks...</div>
+            ) : filteredFeedback.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 gap-6 p-4 ">
+                {filteredFeedback.map((feedback) => {
+                  const user = users.find(u => u._id === feedback.user);
+                  return (
+                    <div
+                      key={feedback._id}
+                      className="bg-white rounded-2xl p-10  shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 min-h-80"
+                    >
+                      {/* User Header */}
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
+                          {user?.userName ? user.userName.slice(0, 2).toUpperCase() : 'UN'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-gray-800 truncate">
+                            {user?.userName || 'Unknown User'}
+                          </div>
+                          <div className="text-sm text-gray-500 truncate">
+                            {user?.email || 'unknown@gmail.com'}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-gray-400">
+                          <Calendar className="w-4 h-4" />
+                          <span>
+                            {new Date(feedback.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {/* <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(feedback.category)}`}>{getCategoryLabel(feedback.category)}</span> */}
-                        <div className="flex items-center gap-1">
-                          <Calendar size={14} className="text-gray-400" />
-                          <span className="text-sm text-gray-500">{new Date(feedback.createdAt).toLocaleDateString()}</span>
+
+                      {/* Divider */}
+                      <div className="border-t border-gray-200 mb-4"></div>
+
+                      {/* Feedback Content */}
+                      <div className="space-y-3">
+                        <div>
+                          <strong className="text-sm text-gray-700">Liked Aspects:</strong>
+                          <p className="text-sm text-gray-600 mt-1">{feedback.likedAspects}</p>
+                        </div>
+                        <div>
+                          <strong className="text-sm text-gray-700">Areas for Improvement:</strong>
+                          <p className="text-sm text-gray-600 mt-1">{feedback.areasForImprovement}</p>
+                        </div>
+                        <div>
+                          <strong className="text-sm text-gray-700">Feature Suggestions:</strong>
+                          <p className="text-sm text-gray-600 mt-1">{feedback.featureSuggestions}</p>
+                        </div>
+                        <div>
+                          <strong className="text-sm text-gray-700">Additional Feedback:</strong>
+                          <p className="text-sm text-gray-600 mt-1">{feedback.additionalFeedback}</p>
                         </div>
                       </div>
                     </div>
-                    {/* Comment/Feedback Details */}
-                    <div className="text-gray-700 leading-relaxed">
-                      <div><strong>Liked Aspects:</strong> {feedback.likedAspects}</div>
-                      <div><strong>Areas for Improvement:</strong> {feedback.areasForImprovement}</div>
-                      <div><strong>Feature Suggestions:</strong> {feedback.featureSuggestions}</div>
-                      <div><strong>Additional Feedback:</strong> {feedback.additionalFeedback}</div>
-                    </div>
-                  </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                  <MessageCircle className="w-12 h-12 text-gray-400" />
                 </div>
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">No feedback found</h3>
+                <p className="text-gray-500">Try adjusting your filter criteria</p>
               </div>
-            ))
-          ) : (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                <Search className="w-12 h-12 text-gray-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">No feedback found</h3>
-              <p className="text-gray-500">Try adjusting your search or filter criteria</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
