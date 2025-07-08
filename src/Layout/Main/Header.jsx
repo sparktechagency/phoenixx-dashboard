@@ -10,6 +10,7 @@ import { useGetProfileQuery } from "../../redux/apiSlices/profileApi";
 import { getImageUrl } from "../../components/common/ImageUrl";
 import { jwtDecode } from "jwt-decode";
 import Online from "../../components/common/Online";
+import { useGetNotificationQuery, useReadOneNotificationMutation } from "../../redux/apiSlices/notificationApi";
 
 // ─── jwt decode (unchanged) ────────────────────────────────────────────────────
 let decodedToken = null;
@@ -25,11 +26,60 @@ if (token) {
 
 const Header = ({ toggleSidebar }) => {
   const navigate = useNavigate();               // ✳️
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [notifications, setNotifications] = useState([]);
   const [socketConnected, setSocketConnected] = useState(false);
   const socketRef = useRef(null);
   const { data: getProfile } = useGetProfileQuery();
+
+  // Fetch notifications from API
+  const { data: notificationData, refetch } = useGetNotificationQuery({ page: 1, limit: 10 });
+  const [readOneNotification] = useReadOneNotificationMutation();
+
+  const notifications = notificationData?.data?.data || [];
+  const unreadNotifications = notifications.filter(n => !n.read);
+  const unreadCount = unreadNotifications.length;
+
+  // State to manage notifications shown in popover
+  const [localUnreadNotifications, setLocalUnreadNotifications] = useState([]);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  // Store last 5 unread notifications in localStorage whenever they change
+  useEffect(() => {
+    const last5Unread = unreadNotifications.slice(0, 5);
+    if (last5Unread.length > 0) {
+      localStorage.setItem("last5UnreadNotifications", JSON.stringify(last5Unread));
+    } else {
+      localStorage.removeItem("last5UnreadNotifications");
+    }
+  }, [unreadNotifications]);
+
+  // Handler for popover open/close
+  const handlePopoverOpenChange = (open) => {
+    setPopoverOpen(open);
+    if (open) {
+      // On open, load from localStorage
+      const stored = localStorage.getItem("last5UnreadNotifications");
+      if (stored) {
+        setLocalUnreadNotifications(JSON.parse(stored));
+      } else {
+        setLocalUnreadNotifications([]);
+      }
+    } else {
+      // On close, clear from localStorage and state
+      localStorage.removeItem("last5UnreadNotifications");
+      setLocalUnreadNotifications([]);
+    }
+  };
+
+  // Mark as read handler
+  const handleNotificationRead = async (id) => {
+    if (id) {
+      await readOneNotification(id);
+    } else {
+      // Optionally, mark all as read if no id
+      // await readAllNotification();
+    }
+    refetch();
+  };
 
   // ─── cross‑tab logout listener ───────────────────────────────────────────────
   useEffect(() => {
@@ -72,8 +122,8 @@ const Header = ({ toggleSidebar }) => {
             typeof data === "string"
               ? { message: data, timestamp: new Date().toISOString() }
               : data;
-          setNotifications((prev) => [n, ...prev]);
-          setUnreadCount((c) => c + 1);
+          // setNotifications((prev) => [n, ...prev]); // This line is removed
+          // setUnreadCount((c) => c + 1); // This line is removed
           message.info("New notification received");
         });
       } catch (error) {
@@ -89,10 +139,10 @@ const Header = ({ toggleSidebar }) => {
   }, []);
 
   // ─── helpers ────────────────────────────────────────────────────────────────
-  const handleNotificationRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    setUnreadCount(0);
-  };
+  // const handleNotificationRead = () => {
+  //   setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  //   setUnreadCount(0);
+  // };
 
   // ✳️ unified logout handler
   const handleLogout = () => {
@@ -154,14 +204,15 @@ const Header = ({ toggleSidebar }) => {
           <Popover
             content={
               <NotificationPopover
-                notifications={notifications}
+                notifications={localUnreadNotifications}
                 onRead={handleNotificationRead}
               />
             }
             trigger="click"
             arrow={false}
             placement="bottom"
-            onOpenChange={(v) => v && handleNotificationRead()}
+            open={popoverOpen}
+            onOpenChange={handlePopoverOpenChange}
           >
             <div className="w-12 h-12 bg-[#cfd4ff] flex items-center justify-center rounded-md relative cursor-pointer">
               <FaRegBell size={30} className="text-smart" />

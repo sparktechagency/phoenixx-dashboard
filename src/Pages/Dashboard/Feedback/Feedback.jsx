@@ -1,11 +1,10 @@
 
-
-
 import React, { useState } from 'react';
 import { Calendar, MessageCircle } from 'lucide-react';
 import { useGetFeedBackQuery } from '../../../redux/apiSlices/feedbackApi';
 import { useGetUsersQuery } from '../../../redux/apiSlices/usersApi';
 import { Pagination } from 'antd';
+import Loading from '../../../components/common/Loading';
 
 function Feedback() {
   const [selectedMonth, setSelectedMonth] = useState('');
@@ -57,7 +56,7 @@ function Feedback() {
             }}
           >
             {isLoading ? (
-              <div className="text-center py-12 text-gray-500">Loading feedbacks...</div>
+              <Loading/>
             ) : filteredFeedback.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 gap-6 p-4">
                 {filteredFeedback.map((feedback) => {
