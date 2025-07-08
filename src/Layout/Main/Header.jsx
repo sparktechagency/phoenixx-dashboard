@@ -51,7 +51,8 @@ const Header = ({ toggleSidebar }) => {
       try {
         if (socketRef.current) socketRef.current.disconnect();
 
-        socketRef.current = io("http://168.231.64.178:5002", {
+        // socketRef.current = io("http://168.231.64.178:5002", {
+        socketRef.current = io("https://api.mehor.com/api/v1", {
           auth: { token },
           transports: ["websocket"],
           reconnection: true,
