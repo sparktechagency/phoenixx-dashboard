@@ -10,7 +10,7 @@ const contactApi = api.injectEndpoints({
           body: updatedData,
         };
       },
-      invalidatesTags: ["Contact"],
+      invalidatesTags: ["CONTACT"],
     }),
 
     contact: builder.query({
@@ -20,7 +20,7 @@ const contactApi = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["Contact"],
+      providesTags: ["CONTACT"],
     }),
   }),
 });

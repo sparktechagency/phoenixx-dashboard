@@ -10,7 +10,7 @@ const reportApi = api.injectEndpoints({
           body: message,
         };
       },
-      invalidatesTags: ["Report"],
+      invalidatesTags: ["REPORT"],
     }),
     deleteReportedPost: builder.mutation({
       query: (id) => {
@@ -19,7 +19,7 @@ const reportApi = api.injectEndpoints({
           method: "PATCH",
         };
       },
-      invalidatesTags: ["Report"],
+      invalidatesTags: ["REPORT"],
     }),
     getReport: builder.query({
       query: ({ page, limit }) => {
@@ -28,7 +28,7 @@ const reportApi = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["Report"],
+      providesTags: ["REPORT"],
     }),
   }),
 });

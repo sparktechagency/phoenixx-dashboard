@@ -10,7 +10,7 @@ const dashboardApi = api.injectEndpoints({
           body: message,
         };
       },
-      invalidatesTags: ["Dashboard"],
+      invalidatesTags: ["DASHBOARD"],
     }),
     getTotalusers: builder.query({
       query: (year) => {
@@ -19,7 +19,7 @@ const dashboardApi = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["Dashboard"],
+      providesTags: ["DASHBOARD"],
     }),
     getStats: builder.query({
       query: () => {
@@ -28,7 +28,7 @@ const dashboardApi = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["Dashboard"],
+      providesTags: ["DASHBOARD"],
     }),
   }),
 });

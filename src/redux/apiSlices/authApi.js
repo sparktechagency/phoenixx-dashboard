@@ -10,6 +10,7 @@ const authSlice = api.injectEndpoints({
           body: data,
         };
       },
+      invalidatesTags:["AUTH"]
     }),
     login: builder.mutation({
       query: (data) => {
@@ -26,6 +27,7 @@ const authSlice = api.injectEndpoints({
         const { message } = data;
         return message;
       },
+      invalidatesTags:["AUTH"]
     }),
     forgotPassword: builder.mutation({
       query: (data) => {
@@ -35,6 +37,7 @@ const authSlice = api.injectEndpoints({
           body: data,
         };
       },
+      invalidatesTags:["AUTH"]
     }),
     resetPassword: builder.mutation({
       query: (value) => {
@@ -47,6 +50,7 @@ const authSlice = api.injectEndpoints({
           },
         };
       },
+      invalidatesTags:["AUTH"]
     }),
     changePassword: builder.mutation({
       query: (data) => {
@@ -56,6 +60,7 @@ const authSlice = api.injectEndpoints({
           body: data,
         };
       },
+      invalidatesTags:["AUTH"]
     }),
 
     updateProfile: builder.mutation({
@@ -71,6 +76,7 @@ const authSlice = api.injectEndpoints({
           },
         };
       },
+      invalidatesTags:["ADMIN_PROFILE"]
     }),
 
     profile: builder.query({
@@ -88,6 +94,7 @@ const authSlice = api.injectEndpoints({
       transformResponse: ({ user }) => {
         return user;
       },
+      providesTags:["ADMIN_PROFILE"]
     }),
   }),
 });

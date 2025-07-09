@@ -10,6 +10,7 @@ const aboutusApi = api.injectEndpoints({
           body: description,
         };
       },
+      invalidatesTags:["ABOUT_US"]
     }),
 
     aboutUs: builder.query({
@@ -22,7 +23,9 @@ const aboutusApi = api.injectEndpoints({
       transformResponse: ({ data }) => {
         return data;
       },
+      providesTags:["ABOUT_US"]
     }),
+    
   }),
 });
 

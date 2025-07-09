@@ -1,45 +1,3 @@
-// import { api } from "../api/baseApi";
-
-// const announcementApi = api.injectEndpoints({
-//   endpoints: (builder) => ({
-//     createAnnouncement: builder.mutation({
-//       query: (categoryData) => {
-//         return {
-//           url: "/announcement-slider/create",
-//           method: "POST",
-//           body: categoryData,
-//         };
-//       },
-//       invalidatesTags: ["Category"],
-//     }),
-//     updateAnnouncement: builder.mutation({
-//       query: ({ id, formData }) => {
-//         return {
-//           url: `/categories/${id}`,
-//           method: "PATCH",
-//           body: formData,
-//         };
-//       },
-//       invalidatesTags: ["Category"],
-//     }),
-
-//     getAnnouncement: builder.query({
-//       query: () => {
-//         return {
-//           url: "/announcement-slider",
-//           method: "GET",
-//         };
-//       },
-//       providesTags: ["Category"],
-//     }),
-//   }),
-// });
-
-// export const {
-//   useCreateAnnouncementMutation,
-//   useGetAnnouncementQuery,
-//   useUpdateAnnouncementMutation,
-// } = announcementApi;
 
 import { api } from "../api/baseApi";
 
@@ -53,7 +11,7 @@ const announcementApi = api.injectEndpoints({
           body: categoryData, // Only image and status will be sent
         };
       },
-      invalidatesTags: ["Category"],
+      invalidatesTags: ["CATEGORY"],
     }),
     updateAnnouncement: builder.mutation({
       query: ({ id, formData }) => {
@@ -63,7 +21,7 @@ const announcementApi = api.injectEndpoints({
           body: formData, // Only image and status will be sent
         };
       },
-      invalidatesTags: ["Category"],
+      invalidatesTags: ["CATEGORY"],
     }),
     deleteAnnouncement: builder.mutation({
       query: ({ id }) => {
@@ -72,7 +30,7 @@ const announcementApi = api.injectEndpoints({
           method: "DELETE",
         };
       },
-      invalidatesTags: ["Category"],
+      invalidatesTags: ["CATEGORY"],
     }),
 
     getAnnouncement: builder.query({
@@ -82,7 +40,7 @@ const announcementApi = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["Category"],
+      providesTags: ["CATEGORY"],
     }),
   }),
 });

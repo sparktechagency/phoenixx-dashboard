@@ -10,7 +10,7 @@ const packageApi = api.injectEndpoints({
           body: data,
         };
       },
-      invalidatesTags: ["Package"],
+      invalidatesTags: ["PACKAGE"],
     }),
     updatePackage: builder.mutation({
       query: ({ id, updatedData }) => {
@@ -20,7 +20,7 @@ const packageApi = api.injectEndpoints({
           body: updatedData,
         };
       },
-      invalidatesTags: ["Package"],
+      invalidatesTags: ["PACKAGE"],
     }),
     deletePackage: builder.mutation({
       query: (id) => {
@@ -29,7 +29,7 @@ const packageApi = api.injectEndpoints({
           method: "DELETE",
         };
       },
-      invalidatesTags: ["Package"],
+      invalidatesTags: ["PACKAGE"],
     }),
 
     getPackage: builder.query({
@@ -39,7 +39,7 @@ const packageApi = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["Package"],
+      providesTags: ["PACKAGE"],
     }),
   }),
 });

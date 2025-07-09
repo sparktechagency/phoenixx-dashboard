@@ -11,6 +11,8 @@ import { getImageUrl } from "../../components/common/ImageUrl";
 import { jwtDecode } from "jwt-decode";
 import Online from "../../components/common/Online";
 import { useGetNotificationQuery, useReadOneNotificationMutation, useReadAllNotificationMutation } from "../../redux/apiSlices/notificationApi";
+import { useDispatch } from "react-redux";
+import { api } from "../../redux/api/baseApi";
 
 // ─── jwt decode (unchanged) ────────────────────────────────────────────────────
 let decodedToken = null;
@@ -26,9 +28,11 @@ if (token) {
 
 const Header = ({ toggleSidebar }) => {
   const navigate = useNavigate();               // ✳️
+  const dispatch = useDispatch();
   const [socketConnected, setSocketConnected] = useState(false);
   const socketRef = useRef(null);
   const { data: getProfile } = useGetProfileQuery();
+  console.log("User Data Administration",getProfile?.data)
 
   // Fetch notifications from API
   const { data: notificationData, refetch } = useGetNotificationQuery({ page: 1, limit: 10 });
@@ -151,6 +155,7 @@ const Header = ({ toggleSidebar }) => {
   // ✳️ unified logout handler
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
+    dispatch(api.util.resetApiState()); // <-- clear RTK Query cache
     localStorage.setItem("logout", Date.now().toString()); // broadcast
     navigate("/auth/login");
   };

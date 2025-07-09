@@ -8,14 +8,14 @@ const logoApi = api.injectEndpoints({
         method: "POST",
         body: updatedData,
       }),
-      invalidatesTags: ["Logo"],
+      invalidatesTags: ["LOGO"],
     }),
     getLogo: builder.query({
       query: () => ({
         url: `/website-logo`,
         method: "GET",
       }),
-      providesTags: ["Logo"],
+      providesTags: ["LOGO"],
     }),
   }),
 });

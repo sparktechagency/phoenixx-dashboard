@@ -10,7 +10,7 @@ const superAdminSlice = api.injectEndpoints({
           body: data,
         };
       },
-      invalidatesTags: ["Admin"],
+      invalidatesTags: ["ADMIN"],
     }),
     updateAdmin: builder.mutation({
       query: ({ id, updatedData }) => {
@@ -20,7 +20,7 @@ const superAdminSlice = api.injectEndpoints({
           body: updatedData,
         };
       },
-      invalidatesTags: ["Admin"],
+      invalidatesTags: ["ADMIN"],
     }),
     deleteAdmin: builder.mutation({
       query: (id) => {
@@ -29,7 +29,7 @@ const superAdminSlice = api.injectEndpoints({
           method: "DELETE",
         };
       },
-      invalidatesTags: ["Admin"],
+      invalidatesTags: ["ADMIN"],
     }),
     getAllAdmin: builder.query({
       query: () => {
@@ -38,7 +38,7 @@ const superAdminSlice = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["Admin"],
+      providesTags: ["ADMIN"],
     }),
   }),
 });

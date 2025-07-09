@@ -10,7 +10,7 @@ const subCategorySlice = api.injectEndpoints({
           body: categoryData,
         };
       },
-      invalidatesTags: ["SubCategory"],
+      invalidatesTags: ["SUB_CATEGORY"],
     }),
     updateSubCategory: builder.mutation({
       query: ({ id, updatedData }) => {
@@ -20,7 +20,7 @@ const subCategorySlice = api.injectEndpoints({
           body: updatedData,
         };
       },
-      invalidatesTags: ["SubCategory"],
+      invalidatesTags: ["SUB_CATEGORY"],
     }),
     deleteSubCategory: builder.mutation({
       query: (id) => {
@@ -29,7 +29,7 @@ const subCategorySlice = api.injectEndpoints({
           method: "DELETE",
         };
       },
-      invalidatesTags: ["SubCategory"],
+      invalidatesTags: ["SUB_CATEGORY"],
     }),
     getSubCategories: builder.query({
       query: () => {
@@ -38,7 +38,7 @@ const subCategorySlice = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["SubCategory"],
+      providesTags: ["SUB_CATEGORY"],
     }),
     getSubCategoriesByCatID: builder.query({
       query: (catID) => {
@@ -47,7 +47,7 @@ const subCategorySlice = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["SubCategory"],
+      providesTags: ["SUB_CATEGORY"],
     }),
   }),
 });

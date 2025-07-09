@@ -9,7 +9,7 @@ const feedBackApi = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["Feedback"],
+      providesTags: ["FEEDBACK"],
     }),
   }),
 });

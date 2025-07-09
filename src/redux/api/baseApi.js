@@ -23,5 +23,5 @@ export const imageUrl = getBaseUrl();
 export const api = createApi({
   baseQuery,
   endpoints: () => ({}),
-  tagTypes: ["Profile"],
+  tagTypes: ["Profile","USER","Users","ABOUT_US","CATEGORY","ADMIN_PROFILE","AUTH","CONTACT","DASHBOARD","FAQC","FEEDBACK","LOGO","NOTIFICATION","PACKAGE","REPORT","SUB_CATEGORY","ADMIN"],
 });

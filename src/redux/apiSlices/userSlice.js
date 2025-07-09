@@ -14,7 +14,8 @@ const userSlice = api.injectEndpoints({
                         Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
                     }
                 }
-            }
+            },
+            providesTags:["USER"]
         }),
     })
 })
