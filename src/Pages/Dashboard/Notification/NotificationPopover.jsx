@@ -176,15 +176,16 @@
 // export default NotificationPopover;
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Spin, Tag, Button, ConfigProvider } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
 import { MdOutlineMarkEmailRead, MdCancel } from "react-icons/md";
 import moment from "moment";
 import EmptyNotification from "../../../assets/EmptyNotification.png";
 
-const NotificationPopover = ({ onRead, notifications = [] }) => {
+const NotificationPopover = ({ onRead, notifications = [], closePopover }) => {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const formatTime = (timestamp) =>
     timestamp ? moment(timestamp).fromNow() : "Just now";
@@ -304,11 +305,15 @@ const NotificationPopover = ({ onRead, notifications = [] }) => {
             ))}
           </div>
           <div className="border-t border-gray-700 p-2 flex justify-between items-center">
-            <Link to="/notification">
-              <Button className="rounded-lg bg-smart border-none text-white">
-                See all
-              </Button>
-            </Link>
+            <Button
+              className="rounded-lg bg-smart border-none text-white"
+              onClick={() => {
+                if (closePopover) closePopover();
+                navigate("/notification");
+              }}
+            >
+              See all
+            </Button>
           </div>
         </>
       ) : (
@@ -325,11 +330,15 @@ const NotificationPopover = ({ onRead, notifications = [] }) => {
           <p className="text-wrap text-center text-[12px] text-gray-400">
             Your notifications will appear here.
           </p>
-          <Link to="/notification">
-            <Button className="w-32 rounded-lg mt-2 bg-smart text-white border-none">
-              See details
-            </Button>
-          </Link>
+          <Button
+            className="w-32 rounded-lg mt-2 bg-smart text-white border-none"
+            onClick={() => {
+              if (closePopover) closePopover();
+              navigate("/notification");
+            }}
+          >
+            See details
+          </Button>
         </div>
       )}
     </div>

@@ -10,7 +10,7 @@ import { useGetProfileQuery } from "../../redux/apiSlices/profileApi";
 import { getImageUrl } from "../../components/common/ImageUrl";
 import { jwtDecode } from "jwt-decode";
 import Online from "../../components/common/Online";
-import { useGetNotificationQuery, useReadOneNotificationMutation } from "../../redux/apiSlices/notificationApi";
+import { useGetNotificationQuery, useReadOneNotificationMutation, useReadAllNotificationMutation } from "../../redux/apiSlices/notificationApi";
 
 // ─── jwt decode (unchanged) ────────────────────────────────────────────────────
 let decodedToken = null;
@@ -33,6 +33,7 @@ const Header = ({ toggleSidebar }) => {
   // Fetch notifications from API
   const { data: notificationData, refetch } = useGetNotificationQuery({ page: 1, limit: 10 });
   const [readOneNotification] = useReadOneNotificationMutation();
+  const [readAllNotification] = useReadAllNotificationMutation();
 
   const notifications = notificationData?.data?.data || [];
   const unreadNotifications = notifications.filter(n => !n.read);
@@ -75,8 +76,7 @@ const Header = ({ toggleSidebar }) => {
     if (id) {
       await readOneNotification(id);
     } else {
-      // Optionally, mark all as read if no id
-      // await readAllNotification();
+      await readAllNotification(); // <-- Mark all as read
     }
     refetch();
   };
@@ -112,7 +112,10 @@ const Header = ({ toggleSidebar }) => {
           randomizationFactor: 0.5,
         });
 
-        socketRef.current.on("connect", () => setSocketConnected(true));
+        socketRef.current.on("connect", () => {
+          setSocketConnected(true);
+          console.log("Socket connected"); // Log when socket connects
+        });
         socketRef.current.on("disconnect", () => setSocketConnected(false));
         socketRef.current.on("connect_error", () => setSocketConnected(false));
 
@@ -125,6 +128,7 @@ const Header = ({ toggleSidebar }) => {
           // setNotifications((prev) => [n, ...prev]); // This line is removed
           // setUnreadCount((c) => c + 1); // This line is removed
           message.info("New notification received");
+          refetch(); // <-- This will update notifications and badge count
         });
       } catch (error) {
         console.error("Failed to init socket:", error);
@@ -206,6 +210,7 @@ const Header = ({ toggleSidebar }) => {
               <NotificationPopover
                 notifications={localUnreadNotifications}
                 onRead={handleNotificationRead}
+                closePopover={() => setPopoverOpen(false)} // <-- add this
               />
             }
             trigger="click"
@@ -214,7 +219,7 @@ const Header = ({ toggleSidebar }) => {
             open={popoverOpen}
             onOpenChange={handlePopoverOpenChange}
           >
-            <div className="w-12 h-12 bg-[#cfd4ff] flex items-center justify-center rounded-md relative cursor-pointer">
+            <div className="w-12 h-12 bg-[#cfd4ff] flex items-center justify-center rounded-full relative cursor-pointer">
               <FaRegBell size={30} className="text-smart" />
               {unreadCount > 0 && (
                 <Badge
@@ -222,7 +227,7 @@ const Header = ({ toggleSidebar }) => {
                   overflowCount={5}
                   size="default"
                   color="red"
-                  className="absolute top-2 right-3"
+                  className="absolute top-0 right-0"
                 />
               )}
             </div>
