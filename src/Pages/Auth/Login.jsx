@@ -19,12 +19,16 @@ const Login = () => {
       };
       const res = await login(trimmedValues).unwrap();
       const decoded = jwtDecode(res?.data?.accessToken);
-      if (decoded?.role === "SUPER_ADMIN") {
+      console.log("Decoded token:", decoded);
+      console.log("Role in token:", decoded?.role);
+      console.log("Token exp:", decoded?.exp, "Current time:", Math.floor(Date.now() / 1000));
+      if (["SUPER_ADMIN", "ADMIN"].includes(decoded?.role?.toUpperCase().trim())) {
         message.success("Login successful!");
         localStorage.setItem("accessToken", res?.data?.accessToken);
-        navigate("/");
+        // window.location.href = "/"; // <-- This will force a full reload
+        navigate("/", { replace: true });
       } else {
-        message.error("You have not permission this login ");
+        message.error("You do not have permission to login.");
       }
 
       // Show success message

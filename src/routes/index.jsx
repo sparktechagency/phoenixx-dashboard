@@ -20,7 +20,7 @@ import Logo from "../Pages/Dashboard/Logo/LogoList.jsx";
 import CategoryManagement from "../Pages/Dashboard/Category Management/CategoryManagement.jsx";
 import Notifications from "../Pages/Dashboard/Notification/Notifications.jsx";
 import CategoryFAQ from "../Pages/Dashboard/FAQ/CategoryFAQ.jsx";
-import ProtectedRoute from "../components/common/ProtectedRoute.jsx";
+import ProtectedRoute from "./ProtectedRoute.jsx";
 import Package from "../Pages/Dashboard/Package/Package.jsx";
 import AboutUs from "../Pages/Dashboard/AboutUs/AboutUs.jsx";
 import Feedback from "../Pages/Dashboard/Feedback/Feedback.jsx";
