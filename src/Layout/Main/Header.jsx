@@ -39,9 +39,12 @@ const Header = ({ toggleSidebar }) => {
   const [readOneNotification] = useReadOneNotificationMutation();
   const [readAllNotification] = useReadAllNotificationMutation();
 
+
   const notifications = notificationData?.data?.data || [];
   const unreadNotifications = notifications.filter(n => !n.read);
   const unreadCount = unreadNotifications.length;
+
+ 
 
   // State to manage notifications shown in popover
   const [localUnreadNotifications, setLocalUnreadNotifications] = useState([]);

@@ -22,6 +22,8 @@ const Notifications = () => {
     isFetching,
   } = useGetNotificationQuery({ page: currentPage, limit: 10 });
 
+
+  console.log("noti",notifications)
   const [readOneNotification, { isLoading: readingOne }] =
     useReadOneNotificationMutation();
 
@@ -31,7 +33,7 @@ const Notifications = () => {
   // Update notifications data when new data is fetched
   useEffect(() => {
     if (getNotification?.success && getNotification?.data?.data) {
-      setNotifications(getNotification.data.data);
+      setNotifications(getNotification?.data?.data);
     }
   }, [getNotification]);
 
@@ -73,12 +75,44 @@ const Notifications = () => {
 
   const getTypeIcon = (type) => {
     switch (type) {
-      case "warning":
-        return "⚠️";
       case "info":
         return "ℹ️";
+      case "warning":
+        return "⚠️";
+      case "success":
+        return "✅";
+      case "error":
+        return "❌";
+      case "comment":
+        return "💬";
+      case "like":
+        return "👍";
+      case "follow":
+        return "👤";
+      case "post":
+        return "📝";
+      case "reply":
+        return "↩️";
+      case "report":
+        return "🚩";
       default:
         return "📢";
+    }
+  };
+
+  const getTypeLabel = (type) => {
+    switch (type) {
+      case "info": return "Info";
+      case "warning": return "Warning";
+      case "success": return "Success";
+      case "error": return "Error";
+      case "comment": return "Comment";
+      case "like": return "Like";
+      case "follow": return "Follow";
+      case "post": return "Post";
+      case "reply": return "Reply";
+      case "report": return "Report";
+      default: return "Notification";
     }
   };
 
@@ -144,10 +178,7 @@ const Notifications = () => {
                 </div>
                 <div className="text-black flex-1">
                   <p className="font-semibold flex gap-2 items-center">
-                    {notification.type === "warning"
-                      ? "Warning"
-                      : "Notification"}{" "}
-                    {getTypeIcon(notification.type)}
+                    {getTypeLabel(notification.type)} {getTypeIcon(notification.type)}
                   </p>
                   <p>{notification.message || "New Notification"}</p>
                   <p className="text-gray-400 flex items-center gap-2">
