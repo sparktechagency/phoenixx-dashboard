@@ -10,7 +10,6 @@ export default defineConfig({
     allowedHosts: [
       "dashboard.mehor.com",
       "www.dashboard.mehor.com",
-      "api.mehor.com",
     ],
   },
 });
