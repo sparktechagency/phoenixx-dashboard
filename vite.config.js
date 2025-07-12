@@ -13,13 +13,4 @@ export default defineConfig({
       "api.mehor.com",
     ],
   },
-  preview: {
-    host: "168.231.64.178",
-    port: 4175,
-    allowedHosts: [
-      "dashboard.mehor.com",
-      "www.dashboard.mehor.com",
-      "api.mehor.com",
-    ],
-  },
 });
